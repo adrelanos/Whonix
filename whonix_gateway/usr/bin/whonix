@@ -123,7 +123,7 @@ ${UnderlineOn}Important configuration folders:${Reset}
   
 ${UnderlineOn}Important logs:${Reset}
 tail -f /var/log/syslog
-tail -f -n 20 /var/log/htpdate.log
+tail -f -n 20 /var/log/sdwdate
 tail -f /var/log/controlportfilt
 
 ${UnderlineOn} First Time Connection Wizard (Enable/Disable Tor)${Reset}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-run_htpdate() {
+run_sdwdate() {
    trap "error_handler" ERR
 
    let "PROGRESS=$PROGRESS+5" || true
@@ -8,13 +8,13 @@ run_htpdate() {
    progress_bar "$PROGRESS"
 
    if [ "$RUN_BY_CRON" = 1 ]; then
-      sudo service htpdate restart
+      sudo service sdwdate restart
    elif [ "$AUTOSTARTED" = "1" ]; then
-      true "$SCRIPTNAME run_htpdate: not restarting htpdate in this case, \
-because the /etc/init.d/htpdate init script already started htpdate."   
+      true "$SCRIPTNAME run_sdwdate: not restarting sdwdate in this case, \
+because the /etc/init.d/sdwdate init script already started sdwdate."
    else
       ## When manually run...
-      sudo service htpdate restart 
+      sudo service sdwdate restart
    fi
 
    let "PROGRESS=$PROGRESS+1" || true

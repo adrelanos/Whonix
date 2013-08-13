@@ -233,7 +233,7 @@ DnsPort 192.168.0.10:53 IsolateDestPort
 ## SOCKS_PORT_GPG="9105"
 ## SOCKS_PORT_SSH="9106"
 ## SOCKS_PORT_GIT="9107"
-## SOCKS_PORT_HTPDATE="9108"
+## SOCKS_PORT_SDWDATE="9108"
 ## SOCKS_PORT_WGET="9109"
 ## SOCKS_PORT_WHONIXCHECK="9110"
 ## SOCKS_PORT_BITCOIN="9111"
@@ -302,7 +302,7 @@ SocksPort 192.168.0.10:9106 IsolateDestAddr IsolateDestPort
 ## too many servers.
 SocksPort 192.168.0.10:9107 IsolateDestAddr IsolateDestPort
 
-## Network Time Synchronization: htpdate
+## Network Time Synchronization
 ## There are only three different connections.
 SocksPort 192.168.0.10:9108 IsolateDestAddr IsolateDestPort
 

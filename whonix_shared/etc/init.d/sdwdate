@@ -1,23 +1,23 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          htpdate
+# Provides:          sdwdate
 # Required-Start:    mountkernfs $local_fs $remote_fs $syslog $network bootclockrandomization
 # Required-Stop:     $remote_fs $local_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Set time using HTP
-# Description:       Set time using HTP
+# Short-Description: Set time using sdwdate
+# Description:       Set time using sdwdate
 ### END INIT INFO
 
 #set -x
 
-DESC="Setting time using HTP"
-NAME=htpdate
+DESC="Setting time using sdwdate"
+NAME=sdwdate
 SCRIPTNAME=/etc/init.d/$NAME
-HTP_DIR=/var/run/$NAME
-PIDFILE=$HTP_DIR/pid
-HTP_DONE_FILE=$HTP_DIR/done
-HTP_SUCCESS_FILE=$HTP_DIR/success
+SDW_DIR=/var/run/$NAME
+PIDFILE=$SDW_DIR/pid
+SDW_DONE_FILE=$SDW_DIR/done
+SDW_SUCCESS_FILE=$SDW_DIR/success
 LOG=/var/log/$NAME.log
 
 # Load the VERBOSE setting and other rcS variables
@@ -29,33 +29,12 @@ LOG=/var/log/$NAME.log
 . /lib/lsb/init-functions
 
 # Create status directory and log file
-install -o root -g root -m 0755 -d ${HTP_DIR}
-install -o htp -g nogroup -m 0644 /dev/null ${LOG}
-
-# Source configuration
-. /etc/default/$NAME
+install -o root -g root -m 0755 -d ${SDW_DIR}
+install -o sdw -g nogroup -m 0644 /dev/null ${LOG}
 
 log() {
 	echo "$@" >> "${LOG}"
 }
-
-# Sanity checks
-if [ -z "$HTTP_USER_AGENT" ]; then
-	log "HTTP_USER_AGENT is not set."
-	exit 2
-fi
-if [ -z "$HTP_POOL_PAL" ]; then
-	log "HTP_POOL_PAL is not set"
-	exit 3
-fi
-if [ -z "$HTP_POOL_NEUTRAL" ]; then
-	log "HTP_POOL_NEUTRAL is not set"
-	exit 3
-fi
-if [ -z "$HTP_POOL_FOE" ]; then
-	log "HTP_POOL_FOE is not set"
-	exit 3
-fi
 
 do_start() {
 	## Does not work: /usr/sbin/VBoxService --disable-timesync || true
@@ -76,44 +55,46 @@ INFO: Whonix /etc/init.d/timesync
 	## Debian
 	service virtualbox-guest-utils stop 2>/dev/null || true
 
-	if [ -e "$HTP_DONE_FILE" ]; then
-		rm -f "$HTP_DONE_FILE"
+	if [ -e "$SDW_DONE_FILE" ]; then
+		rm -f "$SDW_DONE_FILE"
 	fi
 
-	if [ -e "$HTP_SUCCESS_FILE" ]; then
-		rm -f "$HTP_SUCCESS_FILE"
+	if [ -e "$SDW_SUCCESS_FILE" ]; then
+		rm -f "$SDW_SUCCESS_FILE"
 	fi
 
-	start-stop-daemon -S -v -b -p ${PIDFILE} -m -x /usr/sbin/htpdate -- \
-		--debug \
-		--log_file "$LOG" \
-		--user_agent "$HTTP_USER_AGENT" \
-		--allowed_per_pool_failure_ratio 0.34 \
-		--user htp \
-		--done_file    "$HTP_DONE_FILE" \
-		--success_file "$HTP_SUCCESS_FILE" \
-		--pal_pool     "$HTP_POOL_PAL" \
-		--neutral_pool "$HTP_POOL_NEUTRAL" \
-		--foe_pool     "$HTP_POOL_FOE" \
-	        --proxy        "socks5h://192.168.0.10:9108/"
+	start-stop-daemon \
+	   --start \
+	   --pidfile "$PIDFILE" \
+	   --make-pidfile \
+	   --background \
+	   --exec /usr/bin/sdwdate --
 
 	return $?
 }
 
 do_stop() {
-	start-stop-daemon -K -q -p ${PIDFILE} 2> /dev/null
+	start-stop-daemon \
+	   --stop \
+	   --quiet \
+	   --pidfile "$PIDFILE" \
+	   2> /dev/null
 
-	if [ -e "$HTP_DONE_FILE" ]; then
-		rm -f "$HTP_DONE_FILE"
+	if [ -e "$PIDFILE" ]; then
+		rm -f "$PIDFILE"
+	fi	   
+
+	if [ -e "$SDW_DONE_FILE" ]; then
+		rm -f "$SDW_DONE_FILE"
 	fi
 
-	if [ -e "$HTP_SUCCESS_FILE" ]; then
-		rm -f "$HTP_SUCCESS_FILE"
+	if [ -e "$SDW_SUCCESS_FILE" ]; then
+		rm -f "$SDW_SUCCESS_FILE"
 	fi
 }
 
 do_status() {
-   if [ -e "$HTP_SUCCESS_FILE" ]; then
+   if [ -e "$PIDFILE" ]; then
       return 0
    else
       return 1

@@ -160,8 +160,8 @@ haveged
 ## required for whonixcheck check.torproject.org ssl verifcation ## dependency
 ca-certificates
 
-## required for tails_htp ## dependency
-curl libdatetime-perl libdatetime-format-dateparse-perl libgetopt-long-descriptive-perl libtry-tiny-perl
+## required for sdwdate ## dependency
+curl
 
 ## required for whonixcheck, provides /usr/lib/update-notifier/apt-check ## dependency
 update-notifier-common

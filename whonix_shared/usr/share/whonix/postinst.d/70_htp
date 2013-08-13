@@ -1,7 +1,0 @@
-#!/bin/bash
-
-source /usr/share/whonix/postinst.d/pre.bsh
-
-true "Creating the htp user..."
-adduser --system --quiet --group --no-create-home htp || :
-

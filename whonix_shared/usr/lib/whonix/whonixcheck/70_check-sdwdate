@@ -7,36 +7,36 @@ run_timesanitycheck() {
    sudo service timesanitycheck restart
 }
 
-check_htpdate_status() {
+check_sdwdate_status() {
    trap "error_handler" ERR
 
-   local pid_file="/var/run/htpdate/pid"
-   local done_file="/var/run/htpdate/done"
-   local success_file="/var/run/htpdate/success"
+   local pid_file="/var/run/sdwdate/pid"
+   local done_file="/var/run/sdwdate/done"
+   local success_file="/var/run/sdwdate/success"
    
    if [ ! -f "$pid_file" ]; then
-      HTPDATE_STATUS="NO_PID"
+      SDWDATE_STATUS="NO_PID"
       return 0
    fi
    
    if [ -f "$success_file" ]; then
-      HTPDATE_STATUS="SUCCESS"
+      SDWDATE_STATUS="SUCCESS"
       return 0
    fi
    
    if [ -f "$done_file" ]; then
-      HTPDATE_STATUS="DONE"
+      SDWDATE_STATUS="DONE"
       return 0
    fi
    
-   HTPDATE_STATUS="RUNNING"
+   SDWDATE_STATUS="RUNNING"
 }
 
-check_htpdate() {
+check_sdwdate() {
    trap "error_handler" ERR
 
-   local HELPTEXT="See logfile: tail -f -n 20 /var/log/htpdate.log
-See status files: cd /var/run/htpdate && dir
+   local HELPTEXT="See logfile: tail -f -n 20 /var/log/sdwdate
+See status files: cd /var/run/sdwdate && dir
 Try again: Start menu -> Applications -> System -> Whonix Timesync
            or in Terminal: timesync
 Last resort: manually set the clock! (In UTC!):
@@ -53,21 +53,21 @@ Last resort: manually set the clock! (In UTC!):
    TIME_END="$(date +%s)"
    TIME_DIFF="$(expr "$TIME_END" - "$TIME_START")" || true
    
-   ## htpdate uses a timeout of 180 seconds per curl connection.
+   ## sdwdate uses a timeout of 180 seconds per curl connection.
    ## There are three curl connections in total, which would equal 540 seconds in total.
-   ## This timeout should not be hit often anyway. Only in case htpdate neither returns
+   ## This timeout should not be hit often anyway. Only in case sdwdate neither returns
    ## success nor failure.
    WAIT_MIN="580"
 
-   #echo "check_htpdate debug info: expr $WAIT_MIN - $TIME_DIFF"
+   #echo "check_sdwdate debug info: expr $WAIT_MIN - $TIME_DIFF"
    WAIT_RESULT="$(expr "$WAIT_MIN" - "$TIME_DIFF")" || true
-   #echo "check_htpdate debug info: WAIT_RESULT: $WAIT_RESULT"
+   #echo "check_sdwdate debug info: WAIT_RESULT: $WAIT_RESULT"
 
-   check_htpdate_status
-   #echo "HTPDATE_STATUS: $HTPDATE_STATUS"
+   check_sdwdate_status
+   #echo "SDWDATE_STATUS: $SDWDATE_STATUS"
    
-   if [ "$HTPDATE_STATUS" = "NO_PID" ]; then
-      ## If there is no pid file after we restarted htpdate, it is a bug.
+   if [ "$SDWDATE_STATUS" = "NO_PID" ]; then
+      ## If there is no pid file after we restarted sdwdate, it is a bug.
       local MSG="Network Time Synchronization (timesync) failed!!!
 TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
 pid_file does not exist. Please report this bug!
@@ -77,8 +77,8 @@ $HELPTEXT"
       return 0
    fi
 
-   if [ "$HTPDATE_STATUS" = "SUCCESS" ]; then
-      local success_file="/var/run/htpdate/success"
+   if [ "$SDWDATE_STATUS" = "SUCCESS" ]; then
+      local success_file="/var/run/sdwdate/success"
       local SUCCESS_TIME="$(date -r "$success_file")" 
       
       if [ "$TIMESANITYCHECK_STATUS" = "0" ]; then
@@ -100,9 +100,9 @@ $HELPTEXT"
       fi
    fi
    
-   if [ "$HTPDATE_STATUS" = "DONE" ]; then
+   if [ "$SDWDATE_STATUS" = "DONE" ]; then
       if [ "$TIMESANITYCHECK_STATUS" = "0" ]; then
-         ## Htpdate done, but no success. The clock is sane. This should rarely happen,
+         ## sdwdate done, but no success. The clock is sane. This should rarely happen,
          ## only in case the internet connection was down at this point.
          local MSG="Network Time Synchronization (timesync) done, but no success!!!
 Is your internet connection down?
@@ -125,20 +125,20 @@ $HELPTEXT"
       fi
    fi
 
-   #echo "check_htpdate debug info: WAIT_RESULT: $WAIT_RESULT"
+   #echo "check_sdwdate debug info: WAIT_RESULT: $WAIT_RESULT"
 
    if [ $WAIT_RESULT -gt 0 ]; then
-      #echo "check_htpdate debug info: Not done. Waiting up to $WAIT_RESULT more seconds."
+      #echo "check_sdwdate debug info: Not done. Waiting up to $WAIT_RESULT more seconds."
       sleep 7
-      check_htpdate
+      check_sdwdate
       return 0
    fi
 
    ## This following code should get rarely hit, only in case of a bug,
-   ## only in case htpdate does return neither success nor failure.
-   ## Should not happen, because htpdate has its own timeout.  
+   ## only in case sdwdate does return neither success nor failure.
+   ## Should not happen, because sdwdate has its own timeout.
    local MSG="Network Time Synchronization failed!!!
-HTPDATE_STATUS: "$HTPDATE_STATUS"
+SDWDATE_STATUS: "$SDWDATE_STATUS"
 TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
 Please report this bug!
 

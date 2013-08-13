@@ -35,10 +35,10 @@ esac
 
 ## Small hack.
 ## Our debian/rules file automatically installs all files in
-## whonix_shared/etc/init.d/ as init files. The htpdate init script
+## whonix_shared/etc/init.d/ as init files. The sdwdate init script
 ## depends on the bootclockrandomization init script and therefore
 ## fails:
-##    insserv: Service bootclockrandomization has to be enabled to start service htpdate
+##    insserv: Service bootclockrandomization has to be enabled to start service sdwdate
 ##    insserv: exiting now!
 ##    update-rc.d: error: insserv rejected the script header
 ## Therefore add it here before debhelper auto generated code.

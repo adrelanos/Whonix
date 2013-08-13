@@ -14,8 +14,7 @@ Architecture: all
 Depends: console-common, initramfs-tools, grub-pc, os-prober, bzip2, file, lsof, most, 
  pciutils, strace, sysfsutils, acpi-support-base, keyboard-configuration, sudo, rungetty, mingetty, 
  less, ed, gnupg, gnupg-curl, ifupdown, netbase, net-tools, kbd, debsums, iptables, haveged, 
- ca-certificates, curl, libdatetime-perl, libdatetime-format-dateparse-perl, 
- libgetopt-long-descriptive-perl, libtry-tiny-perl, update-notifier-common, zenity, libnotify-bin, 
+ ca-certificates, curl, update-notifier-common, zenity, libnotify-bin,
  imagemagick, gsfonts, virt-what, python-stem, ${misc:Depends}
 Description: Dependencies for Whonix-Gateway and Whonix-Workstation
  A metapackage, which installs packages which both, Whonix-Gateway 

@@ -34,7 +34,7 @@ source /usr/lib/whonix/whonixcheck/60_download-whonix-blog
 source /usr/lib/whonix/whonixcheck/help_tbbversion
 source /usr/lib/whonix/whonixcheck/65_check-torbrowser
 source /usr/lib/whonix/whonixcheck/67_check_clock
-source /usr/lib/whonix/whonixcheck/70_check-htpdate
+source /usr/lib/whonix/whonixcheck/70_check-sdwdate
 source /usr/lib/whonix/whonixcheck/72_donate
 source /usr/lib/whonix/whonixcheck/75_cleanup
 
@@ -78,7 +78,7 @@ whonixcheck_main() {
 
       ## Only for debugging using the --minimal switch.
 
-      check_htpdate ## 70_check-htpdate
+      check_sdwdate ## 70_check-sdwdate
 
    elif [ -f "/usr/share/whonix/whonix_workstation" ]; then
       ## for Whonix-Workstation

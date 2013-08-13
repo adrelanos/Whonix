@@ -87,7 +87,7 @@ ${UnderlineOn}Important configuration folders:${Reset}
   
 ${UnderlineOn}Important logs:${Reset}
 tail -f /var/log/syslog
-tail -f -n 20 /var/log/htpdate.log
+tail -f -n 20 /var/log/sdwdate
 
 ${UnderlineOn}Change keyboard layout:${Reset}
 sudo dpkg-reconfigure keyboard-configuration
