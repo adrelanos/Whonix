@@ -30,9 +30,6 @@ source variables
 ## - Older packages can still be downloaded http://snapshot.debian.org/. Use it so verification still works long time after release.
 ## - /home/user/whonix_binary/verification/Whonix-Workstation.ovf has to be manually audited.
 
-## TODO remove
-CHROOT_FOLDER=""
-
 ## TODO: Read which version to check or filename from command line?
 WHONIX_BUILD_WHONIX_VERSION_NEW="0.5.6"
 
@@ -45,7 +42,7 @@ TEMP_FOLDER=""$WHONIX_BINARY"/verification"
 sudo -u "$USERNAME" mkdir --parents "$TEMP_FOLDER"
 cd "$TEMP_FOLDER"
 
-declare -g remembered_file
+declare -A -g remembered_file
 
 declare -A -g pkg_name
 declare -A -g pkg_vers_with
@@ -88,9 +85,11 @@ error_handler_unmount_verify_build() {
 
 trap "error_handler_unmount_verify_build" ERR INT TERM
 
+## TODO: Remove
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img || true
+
 ## Mount "$TEMP_FOLDER"/"$VMNAME".img
-## TODO: activate
-#"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
 
 ## archive keyring
 gpg \
@@ -127,6 +126,56 @@ export http_proxy="http://127.0.0.1:3142"
    
 ## Disable apt-cacher-ng.
 export unset http_proxy
+
+verify_whonix_source_files_helper() {
+   trap "error_handler_unmount_verify_build" ERR INT TERM
+
+   for i in $(find "$1"); do
+      if [ -d "$i" ]; then
+         continue
+      fi
+      if [ "$(basename "$i")" = ".directory" ]; then
+         echo "${bold}${cyan}INFO: skipping to diff $i. ${reset}"
+         continue
+      fi
+      local temp="${i#"$1"}"
+      local tmp="/"$temp""
+      local chroot_file="$CHROOT_FOLDER"/"$temp"
+      
+      echo "${cyan}INFO${reset}: Diffing original "$i" with "$chroot_file"..."
+      echo "${cyan}INFO${reset}: tmp: $tmp"
+      
+      local diff_return="0"
+      diff "$i" "$chroot_file" || { local diff_return="$?"; true; };
+
+      if [ "$diff_return" = "0" ]; then
+         remembered_file["$tmp"]="0"
+      else
+         echo "${red}${bold}ERROR: Diff returned "$diff_return" for "$chroot_file"...${reset}"
+         WHONIX_BUILD_VERIFY_MISMATCH="$(expr "$WHONIX_BUILD_VERIFY_MISMATCH" + "1")"
+         remembered_file["$tmp"]="1"
+      fi
+   done
+}
+
+verify_whonix_source_files() {
+   trap "error_handler_unmount_verify_build" ERR INT TERM
+
+   ## Setting +x because the for loops otherwise causes too much output.
+   set +x
+
+   if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+      verify_whonix_source_files_helper "$WHONIX_SOURCE_FOLDER/whonix_gateway/"
+      verify_whonix_source_files_helper "$WHONIX_SOURCE_FOLDER/whonix_shared/"
+   elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
+      verify_whonix_source_files_helper "$WHONIX_SOURCE_FOLDER/whonix_workstation/"
+      verify_whonix_source_files_helper "$WHONIX_SOURCE_FOLDER/whonix_shared/"
+   else
+      bug "${red}${bold}ERROR: Neither WHONIX_BUILD_GATEWAY nor WHONIX_BUILD_WORKSTATION is set to 1. Please report this bug!${reset}"
+   fi
+
+   set -x
+}
 
 parse_dpkg_status_file() {
    trap "error_handler_unmount_verify_build" ERR INT TERM
@@ -273,33 +322,84 @@ verify_packages() {
          ## Example md5_actual: 979992095c9402655134383ffbd4cbe8
    
          if [ "$pkg_content_md5sum" = "$md5_actual" ]; then
-            remembered_file[$pkg_content_filename]="0"
+            remembered_file["$pkg_content_filename"]="0"
          else
-            WHONIX_BUILD_VERIFY_MISMATCH="1"
-            remembered_file[$pkg_content_filename]="1"
+            WHONIX_BUILD_VERIFY_MISMATCH="$(expr "$WHONIX_BUILD_VERIFY_MISMATCH" + "1")"
+            remembered_file["$pkg_content_filename"]="1"
             true "${red}${bold}ERROR: Mismatch in package $pkd_${pkg_vers_without[$pkg]}. md5 of /$pkg_content_filename should be $pkg_content_md5sum but is $md5_actual. ${reset}"
          fi
    
       done
    
    done
+
+   set -x
 }
 
+forgotten_files() {
+   trap "error_handler_unmount_verify_build" ERR INT TERM
+
+   local folder=""$CHROOT_FOLDER""
+   
+   local j="0"
+
+   set +x
+
+   for i in $(find "$folder"); do
+      local j="$(expr "$j" + "1")"
+
+      ## Debugging.
+      ## TODO: Out comment.
+      if [ "$j" -gt "10000" ]; then
+         break
+      fi
+      
+      if [ -d "$i" ]; then
+         continue
+      fi
+      if [ "$(basename "$i")" = ".directory" ]; then
+         echo "${bold}${cyan}INFO: skipping to diff $i. ${reset}"
+         continue
+      fi
+      local temp="${i#"$folder"}"
+      local chroot_file="$CHROOT_FOLDER"/"$temp"
+
+      #echo "${cyan}INFO${reset}: i: "$i" temp: "$temp""
+
+      if [ "${remembered_file["$temp"]}" = "0" ]; then
+         echo "${cyan}INFO: Already known as good file: $i || temp: $temp ${reset}"         
+         continue
+      elif [ "${remembered_file["$temp"]}" = "1" ]; then
+         echo "${cyan}INFO: Already known as bad file, i: $i || temp: $temp ${reset}"
+         continue
+      else
+         #echo "${bold}${red}ERROR: Forgotten file i: $i || temp: $temp ${reset}"
+         WHONIX_BUILD_VERIFY_MISMATCH="$(expr "$WHONIX_BUILD_VERIFY_MISMATCH" + "1")"
+         remembered_file["$temp"]="1"
+         continue
+      fi
+   done
+
+   set -x
+}
+
+verify_whonix_source_files
 parse_dpkg_status_file
 download_packages
 extract_packages
 verify_packages
+forgotten_files
 
 ## Get out of this folder, so unmounting will work.
 cd "$WHONIX_BUILD_VERIFY_OLD_PWD"
 
 ## TODO: activate
-#"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
 
 if [ "$WHONIX_BUILD_VERIFY_MISMATCH" = "0" ]; then
    ## ok, no mismatch
    true "${green}${bold}$0 INFO: No mismatch found. ${reset}"
 else
-   error "${red}${bold}$0 ERROR: Mismatch found! See the read messages above to find out where."
+   error "${red}${bold}$0 ERROR: $WHONIX_BUILD_VERIFY_MISMATCH files mismatched! See the red messages above to find out which files. ${reset}"
 fi
 

@@ -1,0 +1,11 @@
+## Whonix AppArmor Profile
+
+## Workaround for: config-package-dev clashes with AppArmor profiles
+## https://github.com/Whonix/Whonix/issues/66
+
+/* {
+  /etc/hosts.whonix r,
+  /etc/resolv.conf.whonix r,
+}
+
+## End of Whonix AppArmor Profile

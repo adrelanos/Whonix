@@ -1,0 +1,46 @@
+## Whonix Tor Local AppArmor Profile
+
+## Workaround for: config-package-dev clashes with AppArmor profiles
+## https://github.com/Whonix/Whonix/issues/66
+
+## Our profile in /etc/apparmor.d/whonix does not cover the system_tor
+## profile, since that is started by the /etc/init.d/tor init script.
+## https://github.com/Whonix/Whonix/issues/67
+
+  ## Whonix
+  /etc/hosts.whonix r,
+  /etc/resolv.conf.whonix r,
+
+## Add permissions for obfsproxy and flashproxy.
+## AUDIT:
+## These profile rules may be too permissive. Needs audit and someone dedicated
+## to work on AppArmor profiles. It's not a serious security issue in any case,
+## because AppArmor isn't enabled by default in Debian Jessi yet and little
+## work is being done on it at time of writing. So it's a lax AppArmor profile
+## versus no AppArmor at all.
+
+  ## obfsproxy
+  /usr/local/lib/python2.7/** r,
+  /var/log/tor/log rw,
+  /dev/urandom r,
+  /dev/random r,
+  /usr/** r,
+  /etc/python2.7/sitecustomize.py r,
+  /usr/bin/obfsproxy rix,
+
+  ## flashproxy
+  /home/user/tor-browser_en-US/App/flashproxy-client rix,
+  /home/user/tor-browser_en-US/App/flashproxy-reg-appspot rix,
+  /home/user/tor-browser_en-US/App/flashproxy-reg-url rix,
+  /home/user/tor-browser_en-US/App/flashproxy-reg-http rix,
+  /home/user/tor-browser_en-US/App/flashproxy-reg-email rix,
+  /usr/bin/python2.7 rix,  
+  /usr/lib/python2.7/dist-packages/** m,
+  /usr/lib/python2.7/lib-dynload/** m,
+  /usr/lib/pyshared/python2.7/OpenSSL/** m,
+  /usr/lib/python2.7/lib-dynload/** m,
+  /usr/lib/pyshared/python2.7/numpy/** m,
+  /home/user/tor-browser_en-US/App/** rm,
+  /proc/*/mounts r,
+
+## Whonix Tor Local AppArmor Profile

@@ -48,5 +48,6 @@ install: build
 	dh_configpackage
 	dh_install --fail-missing --sourcedir=$(CURDIR)/debian/tmp
 	dh_bash-completion
+	dh_apparmor --profile-name=whonix -pwhonix-shared-files
 
 .PHONY: build clean binary install

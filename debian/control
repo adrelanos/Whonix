@@ -3,7 +3,7 @@ Section: misc
 Priority: important
 Maintainer: adrelanos <adrelanos@riseup.net>
 Build-Depends: debhelper (>= 8), ruby-ronn (>= 0.7.3), config-package-dev (>= 5.1.1),
- bash-completion, git
+ bash-completion, git, dh-apparmor
 Homepage: https://www.whonix.org
 Vcs-Browser: https://github.com/Whonix/Whonix
 Vcs-Git: https://github.com/Whonix/Whonix.git
@@ -38,6 +38,7 @@ Architecture: all
 Depends: python (>= 2.7), ${misc:Depends}
 Provides: ${diverted-files}
 Conflicts: ${diverted-files}
+Suggests: apparmor
 Description: Scripts and config files for Whonix-Gateway and Whonix-Workstation
  Installs Whonix specific scripts and configuration files, which are required
  for Whonix-Gateway and Whonix-Workstation.
