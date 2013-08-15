@@ -78,6 +78,8 @@ do_stop() {
 	   --stop \
 	   --quiet \
 	   --pidfile "$PIDFILE" \
+	   --signal 2 \
+	   --retry 5 \
 	   2> /dev/null
 
 	if [ -e "$PIDFILE" ]; then
@@ -95,9 +97,13 @@ do_stop() {
 
 do_status() {
    if [ -e "$PIDFILE" ]; then
-      return 0
+   
+      local ps_return="0"
+      ps -p "$(cat "$PIDFILE")" >/dev/null || { local ps_return="$?"; true; };
+      
+      return "$ps_return"
    else
-      return 1
+      return "1"
    fi
 }
 

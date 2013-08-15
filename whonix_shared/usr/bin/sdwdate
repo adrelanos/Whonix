@@ -11,10 +11,13 @@
 
 #set -x
 
-SCRIPTNAME="$(basename $0)"                                              
+SCRIPTNAME="$(basename $0)"
+ownpid="$$"
 
 sdwdate_usage() {
-echo "\
+   trap "sdwdate_error_handler" ERR
+
+   echo "\
 $SCRIPTNAME [-aDdlpqTux] [long options...]
         -d --debug                            debug
         --help                                print usage message and exit
@@ -29,12 +32,18 @@ $SCRIPTNAME [-aDdlpqTux] [long options...]
         --foe_pool                            distrusted hostnames
         --allowed_per_pool_failure_ratio      ratio (0.0-1.0) of allowed per-pool failure
         -p --proxy                            what to pass to curl's --socks5-hostname
-        -i --interval                         continuously run every x minutes"
+        -i --interval                         continuously run every x minutes
+        -r --randomize                        randomize interval
+        -n --noconfig                         ignore /etc/sdwdate.d/ config folder
+        -w --dispatchpre                      exec before run
+        -x --dispatchpost                     exec after run"
 
 #       -u --user                             userid to run as
 }
 
 sdwdate_defaults() {
+   trap "sdwdate_error_handler" ERR
+
    CURL_VERBOSE="--silent"
    DEBUG=0
    USER=""
@@ -47,6 +56,10 @@ sdwdate_defaults() {
    PROXY=""
    CURL_PROXY=""
    INTERVAL=""
+   NOCONFIG=""
+   RANDOMIZE=""
+   DISPATCH_PRE=""
+   DISPATCH_POST=""
 
    HTTP_USER_AGENT=""
    #HTTP_USER_AGENT="$(/usr/bin/getTorbuttonUserAgent)"
@@ -123,6 +136,11 @@ sdwdate_defaults() {
 }
 
 sdwdate_read_config_folder() {
+   trap "sdwdate_error_handler" ERR
+
+   if [ "$NOCONFIG" = "1" ]; then
+      return 0
+   fi
    for i in /etc/sdwdate.d/*; do
       if [ -f "$i" ]; then
          ## If the last character is a ~, ignore that file, because it was created
@@ -140,7 +158,9 @@ sdwdate_read_config_folder() {
    done
 }
                                   
-sdwdate_parse_cmd_options() {                                              
+sdwdate_parse_cmd_options() {
+   trap "sdwdate_error_handler" ERR
+
    ## Thanks to:
    ## http://mywiki.wooledge.org/BashFAQ/035
 
@@ -199,13 +219,28 @@ sdwdate_parse_cmd_options() {
                ;;     
            -p | --proxy)
                PROXY=$2
-               CURL_PROXY="--socks5-hostname $PROXY"
                shift 2
                ;;
            -i | --interval)
                INTERVAL=$2
                shift 2
-               ;;               
+               ;;
+           -n | --noconfig)
+               NOCONFIG="1"
+               shift 1
+               ;;
+           -r | --randomize)
+               RANDOMIZE="1"
+               shift 1
+               ;;
+           -w | --dispatchpre)
+               DISPATCH_PRE=$2
+               shift 2
+               ;;
+           -x | --dispatchpost)
+               DISPATCH_POST=$2
+               shift 2
+               ;;
            -q | --quiet)
                QUIET=1
                shift
@@ -229,6 +264,8 @@ sdwdate_parse_cmd_options() {
 }
 
 sdwdate_preparation() {
+   trap "sdwdate_error_handler" ERR
+
    mkdir --parents $(dirname $LOG_FILE)
    mkdir --parents $(dirname $DONE_FILE)
    mkdir --parents $(dirname $SUCCESS_FILE)
@@ -248,6 +285,8 @@ sdwdate_preparation() {
 }
 
 sdwdate_log() {
+   trap "sdwdate_error_handler" ERR
+
    if [ "$QUIET" = "1" ]; then
       true
    else
@@ -273,10 +312,28 @@ sdwdate_error_handler() {
    exit 1
 }
 
+trap "sdwdate_error_handler" ERR
+
+sdwdate_signal_sigint() {
+   trap "sdwdate_error_handler" ERR
+
+   sdwdate_log "SIGINT received. Exiting."
+   touch "$DONE_FILE"
+   exit 0
+}
+
+trap "sdwdate_signal_sigint" SIGINT
+
 sdwdate_download() {
    trap "sdwdate_error_handler" ERR
    
    LINK="https://"$1""
+
+   if [ "$proxy" = "" ]; then
+      CURL_PROXY=""
+   else
+      CURL_PROXY="--socks5-hostname $PROXY"
+   fi
    
    sdwdate_log "getUrlDateDiff: "$LINK""
 
@@ -517,12 +574,29 @@ sdwdate_set_new_time() {
    touch "$DONE_FILE"
 }
 
+sdwdate_dispatcher_pre() {
+   trap "sdwdate_error_handler" ERR
+
+   $DISPATCH_PRE
+}
+
+sdwdate_dispatcher_post() {
+   trap "sdwdate_error_handler" ERR
+
+   $DISPATCH_POST
+}
+
 sdwdate_main() {
+   trap "sdwdate_error_handler" ERR
+
    while true; do
       sdwdate_defaults
       sdwdate_read_config_folder
       sdwdate_parse_cmd_options ${1+"$@"}
       sdwdate_preparation
+
+      sdwdate_dispatcher_pre
+      
       sdwdate_pick
 
       ## Do not continue, if an error was caught.
@@ -532,15 +606,43 @@ sdwdate_main() {
          sdwdate_build_median
          sdwdate_set_new_time
       fi
-      
+
+      sdwdate_dispatcher_post
+
+      ## Check, if we are running in daemon mode.
       if [ "$INTERVAL" = "" ] || [ "$INTERVAL" = "0" ]; then
-         break
+         ## No daemon mode.
+         exit 0
       else
-         local minutes="$(expr $INTERVAL \* 60)"
-         sdwdate_log "Sleeping for $INTERVAL minutes."
-         sleep "$minutes"
+         ## Daemon mode.
+
+         ## INTERVAL: in minutes
+         ## sleep: in seconds
+
+         echo "RANDOMIZE: $RANDOMIZE"
+
+         if [ "$RANDOMIZE" = "1" ]; then
+            local minutes="$(( ($(od -An -N2 -i /dev/random) )%($INTERVAL) ))"
+            if [ "9" -ge "$minutes" ]; then
+               local minutes="$(expr "$minutes" + "10")"
+            fi
+         else
+            local minutes="$INTERVAL"
+         fi
+
+         local seconds="$(expr "$minutes" \* "60")"
+         
+         sdwdate_log "Sleeping for $minutes minutes."
+      
+         sleep "$seconds" &
+         local sleeppid="$!"
+         wait "$sleeppid"
+
+         continue
       fi      
    done
 }
+
+sdwdate_log "Loaded."
 
 sdwdate_main ${1+"$@"}

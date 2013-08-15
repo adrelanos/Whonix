@@ -128,7 +128,7 @@ SOCKS_PORT_APT_GET="9104"
 SOCKS_PORT_GPG="9105"
 SOCKS_PORT_SSH="9106"
 SOCKS_PORT_GIT="9107"
-SOCKS_PORT_HTPDATE="9108"
+SOCKS_PORT_SDWDATE="9108"
 SOCKS_PORT_WGET="9109"
 SOCKS_PORT_WHONIXCHECK="9110"
 SOCKS_PORT_BITCOIN="9111"
@@ -282,7 +282,7 @@ iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_APT_GET" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_GPG" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_SSH" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_GIT" -j ACCEPT
-iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_HTPDATE" -j ACCEPT
+iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_SDWDATE" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_WGET" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_WHONIXCHECK" -j ACCEPT
 iptables -A INPUT -i "$INT_TIF" -p tcp --dport "$SOCKS_PORT_BITCOIN" -j ACCEPT
@@ -327,7 +327,7 @@ iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_APT_GET" 
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_GPG" -j REDIRECT --to-ports "$SOCKS_PORT_GPG"
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_SSH" -j REDIRECT --to-ports "$SOCKS_PORT_SSH"
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_GIT" -j REDIRECT --to-ports "$SOCKS_PORT_GIT"
-iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_HTPDATE" -j REDIRECT --to-ports "$SOCKS_PORT_HTPDATE"
+iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_SDWDATE" -j REDIRECT --to-ports "$SOCKS_PORT_SDWDATE"
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_WGET" -j REDIRECT --to-ports "$SOCKS_PORT_WGET"
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_WHONIXCHECK" -j REDIRECT --to-ports "$SOCKS_PORT_WHONIXCHECK"
 iptables -t nat -A PREROUTING -i "$INT_IF" -p tcp --dport "$SOCKS_PORT_BITCOIN" -j REDIRECT --to-ports "$SOCKS_PORT_BITCOIN"

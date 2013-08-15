@@ -7,8 +7,8 @@ run_sdwdate() {
    ## The 5% indicate, that the check has begun.
    progress_bar "$PROGRESS"
 
-   if [ "$RUN_BY_CRON" = 1 ]; then
-      sudo service sdwdate restart
+   if [ "$RUN_BY_CRON" = "1" ]; then
+      true "$SCRIPTNAME run_sdwdate: not restarting sdwdate, because started by sdwdate"
    elif [ "$AUTOSTARTED" = "1" ]; then
       true "$SCRIPTNAME run_sdwdate: not restarting sdwdate in this case, \
 because the /etc/init.d/sdwdate init script already started sdwdate."

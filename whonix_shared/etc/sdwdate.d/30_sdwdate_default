@@ -9,7 +9,7 @@ DEBUG=0
 USER=""
 
 DONT_SET_DATE=0
-set -x
+
 ## When set to "", uses curl's default.
 HTTP_USER_AGENT=""
 
@@ -23,12 +23,15 @@ ALLOWED_PER_POOL_FAILURE_RATIO=0.34
 
 TEMP_DIR="$(mktemp --directory)"
 
-PROXY=""
+PROXY="192.168.0.10:9108"
 
-## TODO
-CURL_PROXY=""
+INTERVAL="60"
 
-INTERVAL="1"
+RANDOMIZE="1"
+
+DISPATCH_PRE="/usr/lib/whonix/sdwpre"
+
+DISPATCH_POST="/usr/bin/timesync --autostart --cron"
 
 #HTTP_USER_AGENT=""
 #HTTP_USER_AGENT="$(/usr/bin/getTorbuttonUserAgent)"

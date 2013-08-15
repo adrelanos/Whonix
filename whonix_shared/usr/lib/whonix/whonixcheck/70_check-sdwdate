@@ -15,7 +15,15 @@ check_sdwdate_status() {
    local success_file="/var/run/sdwdate/success"
    
    if [ ! -f "$pid_file" ]; then
-      SDWDATE_STATUS="NO_PID"
+      SDWDATE_STATUS="NO_PID_FILE"
+      return 0
+   fi
+
+   local ps_return="0"
+   ps -p "$(cat "$pid_file")" >/dev/null || { local ps_return="$?"; true; };
+
+   if [ ! "$ps_return" = "0" ]; then
+      SDWDATE_STATUS="NO_PID_PROCESS"
       return 0
    fi
    
@@ -66,11 +74,11 @@ Last resort: manually set the clock! (In UTC!):
    check_sdwdate_status
    #echo "SDWDATE_STATUS: $SDWDATE_STATUS"
    
-   if [ "$SDWDATE_STATUS" = "NO_PID" ]; then
-      ## If there is no pid file after we restarted sdwdate, it is a bug.
+   if [ "$SDWDATE_STATUS" = "NO_PID_FILE" ] || [ "$SDWDATE_STATUS" = "NO_PID_PROCESS" ]; then
+      ## If there is no pid file or no process after we restarted sdwdate, it is a bug.
       local MSG="Network Time Synchronization (timesync) failed!!!
 TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
-pid_file does not exist. Please report this bug!
+"$SDWDATE_STATUS" Please report this bug!
 
 $HELPTEXT"
       output "--error" "$MSG" "both"
@@ -127,7 +135,7 @@ $HELPTEXT"
 
    #echo "check_sdwdate debug info: WAIT_RESULT: $WAIT_RESULT"
 
-   if [ $WAIT_RESULT -gt 0 ]; then
+   if [ "$WAIT_RESULT" -gt "0" ]; then
       #echo "check_sdwdate debug info: Not done. Waiting up to $WAIT_RESULT more seconds."
       sleep 7
       check_sdwdate
