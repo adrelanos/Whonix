@@ -36,6 +36,12 @@ log() {
 	echo "$@" >> "${LOG}"
 }
 
+do_start_nd() {
+   ND_PRE="--dispatchpre true"
+   ND_POST="--dispatchpost true"
+   do_start
+}
+
 do_start() {
 	## Does not work: /usr/sbin/VBoxService --disable-timesync || true
 	
@@ -68,7 +74,7 @@ INFO: Whonix /etc/init.d/timesync
 	   --pidfile "$PIDFILE" \
 	   --make-pidfile \
 	   --background \
-	   --exec /usr/bin/sdwdate --
+	   --exec /usr/bin/sdwdate -- $ND_PRE $ND_POST
 
 	return $?
 }
@@ -123,6 +129,10 @@ case "$1" in
 	do_stop
 	do_start
 	;;
+  restartnd)
+	do_stop
+	do_start_nd
+	;;	
   force-reload)
 	do_stop
 	do_start

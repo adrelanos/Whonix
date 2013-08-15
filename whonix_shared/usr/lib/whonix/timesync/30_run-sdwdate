@@ -14,7 +14,7 @@ run_sdwdate() {
 because the /etc/init.d/sdwdate init script already started sdwdate."
    else
       ## When manually run...
-      sudo service sdwdate restart
+      sudo service sdwdate restartnd
    fi
 
    let "PROGRESS=$PROGRESS+1" || true
