@@ -36,7 +36,8 @@ $SCRIPTNAME [-aDdlpqTux] [long options...]
         -r --randomize                        randomize interval
         -n --noconfig                         ignore /etc/sdwdate.d/ config folder
         -w --dispatchpre                      exec before run
-        -x --dispatchpost                     exec after run"
+        -x --dispatchpostsuccess              exec after successful run
+        -z --dispatchpostfailure              exec after unsuccessful run"
 
 #       -u --user                             userid to run as
 }
@@ -104,9 +105,13 @@ sdwdate_defaults() {
       DISPATCH_PRE=""
    fi
 
-   if [ "$DISPATCH_POST" = "" ]; then
-      DISPATCH_POST=""
+   if [ "$DISPATCH_POST_SUCCESS" = "" ]; then
+      DISPATCH_POST_SUCCESS=""
    fi
+
+   if [ "$DISPATCH_POST_FAILURE" = "" ]; then
+      DISPATCH_POST_FAILURE=""
+   fi   
 
    if [ "$HTTP_USER_AGENT" = "" ]; then
       HTTP_USER_AGENT=""
@@ -278,10 +283,14 @@ sdwdate_parse_cmd_options() {
                DISPATCH_PRE=$2
                shift 2
                ;;
-           -x | --dispatchpost)
-               DISPATCH_POST=$2
+           -x | --dispatchpostsuccess)
+               DISPATCH_POST_SUCCESS=$2
                shift 2
                ;;
+           -z | --dispatchpostfailure)
+               DISPATCH_POST_FAILURE =$2
+               shift 2
+               ;;              
            -q | --quiet)
                QUIET=1
                shift
@@ -311,8 +320,8 @@ sdwdate_preparation() {
    mkdir --parents $(dirname $DONE_FILE)
    mkdir --parents $(dirname $SUCCESS_FILE)
    
-   rm --force $DONE_FILE
-   rm --force $SUCCESS_FILE
+   rm --force "$DONE_FILE"
+   rm --force "$SUCCESS_FILE"
 
    declare -A -g SDWDATE_CURL_RETURN
    declare -A -g SDWDATE_CURL_PID
@@ -370,7 +379,7 @@ sdwdate_download() {
    
    LINK="https://"$1""
 
-   if [ "$proxy" = "" ]; then
+   if [ "$PROXY" = "" ]; then
       CURL_PROXY=""
    else
       CURL_PROXY="--socks5-hostname $PROXY"
@@ -590,8 +599,6 @@ sdwdate_set_new_time() {
    trap "sdwdate_error_handler" ERR
 
    if [ "$DONT_SET_DATE" = "1" ]; then
-      touch "$SUCCESS_FILE"
-      touch "$DONE_FILE"      
       return
    fi
    
@@ -610,9 +617,6 @@ sdwdate_set_new_time() {
    #new_unixtime="$(date +%s)"
    #check="$(expr $OLD_UNIXTIME - $new_unixtime)" || true
    #sdwdate_log "check: $check"
-
-   touch "$SUCCESS_FILE"
-   touch "$DONE_FILE"
 }
 
 sdwdate_dispatcher_pre() {
@@ -621,17 +625,41 @@ sdwdate_dispatcher_pre() {
    if [ "$DISPATCH_PRE" = "" ]; then
       true "DISPATCH_PRE is empty, skipping."
    else
-      $DISPATCH_PRE
+      eval $DISPATCH_PRE
    fi
 }
 
-sdwdate_dispatcher_post() {
+sdwdate_failed() {
    trap "sdwdate_error_handler" ERR
 
-   if [ "$DISPATCH_POST" = "" ]; then
-      true "DISPATCH_POST is empty, skipping."
+   rm --force "$SUCCESS_FILE"
+   touch "$DONE_FILE"
+}
+
+sdwdate_success() {
+   trap "sdwdate_error_handler" ERR
+   
+   touch "$SUCCESS_FILE"
+   touch "$DONE_FILE"
+}
+
+sdwdate_dispatcher_post_success() {
+   trap "sdwdate_error_handler" ERR
+
+   if [ "$DISPATCH_POST_SUCCESS" = "" ]; then
+      true "DISPATCH_POST_SUCCESS is empty, skipping."
    else
-      $DISPATCH_POST
+      eval $DISPATCH_POST_SUCCESS
+   fi
+}
+
+sdwdate_dispatcher_post_failure() {
+   trap "sdwdate_error_handler" ERR
+
+   if [ "$DISPATCH_POST_FAILURE" = "" ]; then
+      true "DISPATCH_POST_FAILURE is empty, skipping."
+   else
+      eval $DISPATCH_POST_FAILURE
    fi
 }
 
@@ -660,13 +688,14 @@ sdwdate_main() {
 
       ## Do not continue, if an error was caught.
       if [ ! "$sdwdate_loop_return" = "0" ]; then
-         true
+         sdwdate_failed
+         sdwdate_dispatcher_post_failure
       else 
          sdwdate_build_median
          sdwdate_set_new_time
+         sdwdate_success
+         sdwdate_dispatcher_post_success
       fi
-
-      sdwdate_dispatcher_post
 
       ## Check, if we are running in daemon mode.
       if [ "$INTERVAL" = "" ] || [ "$INTERVAL" = "0" ]; then

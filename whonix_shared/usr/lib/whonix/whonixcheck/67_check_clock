@@ -9,12 +9,12 @@ check_bootclockrandomization() {
    
    if [ "$returncode" = "0" ]; then
       local MSG="bootclockrandomization success."
-      #output "--info" "$MSG" "both"
+      #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    else
       local MSG="bootclockrandomization failed. Please report this bug!
 Last 6 lines of /var/log/bootclockrandomization.log:
 $(tail -n 6 /var/log/bootclockrandomization.log)"
-      output "--error" "$MSG" "both"        
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    fi
 }
 
@@ -27,7 +27,7 @@ check_timesanitycheck() {
    
    if [ "$returncode" = "0" ]; then
       local MSG="timesanitycheck success."
-      #output "--info" "$MSG" "both"
+      #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    else
       local MSG="Time Sanity Check failed before running Network Time Synchronization (timesync)!!!
 Last 6 lines of /var/log/timesanitycheck.log:
@@ -35,7 +35,7 @@ $(tail -n 6 /var/log/timesanitycheck.log)
 
 Is your host clock slow or fast? If so, please power off, fix your host clock and restart.
 If your host clock is sane, please report a bug."
-      output "--error" "$MSG" "both"  
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    fi
 }
 

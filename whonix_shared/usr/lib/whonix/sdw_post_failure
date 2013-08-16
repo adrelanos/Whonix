@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo -u user /bin/bash -x /usr/bin/timesync --autostart --cron
+
+exit 0

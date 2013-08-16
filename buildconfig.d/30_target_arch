@@ -1,4 +1,4 @@
-## configures 1200_create-debian-packages
+## configures 1300_create-debian-img
 
 ## defaults to WHONIX_TARGET_ARCH="i386" 
 

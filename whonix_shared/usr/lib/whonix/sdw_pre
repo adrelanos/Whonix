@@ -12,48 +12,29 @@ ICON="/usr/share/whonix/icons/timesync.ico"
 SCRIPTNAME="$(basename $0)"
 
 source /usr/lib/whonix/whonixcheck/help_error-handler
-source /usr/lib/whonix/whonixcheck/help_cli
-source /usr/lib/whonix/whonixcheck/help_parse-cmd-options
 source /usr/lib/whonix/whonixcheck/help_output
-source /usr/lib/whonix/whonixcheck/10_preparation
-source /usr/lib/whonix/whonixcheck/16_delete_old_files
 source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
-source /usr/lib/whonix/whonixcheck/30_welcome
-source /usr/lib/whonix/whonixcheck/35_disclaimer
-source /usr/lib/whonix/timesync/30_run-sdwdate
 source /usr/lib/whonix/whonixcheck/67_check_clock
 source /usr/lib/whonix/whonixcheck/70_check-sdwdate
 source /usr/lib/whonix/whonixcheck/75_cleanup
 
 timesync_main() {
    trap "error_handler" ERR
-  
-   parse_cmd_options ${1+"$@"} ## help_parse-cmd-options 
-   preparation ## 10_preparation
-   
+
+   RUN_BY_CRON="1"
+
    if [ "$FUNCTION" = "" ]; then
       true
    else
       $FUNCTION
       return 0
    fi
-   
-   delete_old_files ## 16_delete_old_files
-   
-   welcome ## 20_welcome
-   disclaimer ## 25_disclaimer
+
    check_tor_enabled ## 17_check_tor_enabled
+   
    check_bootclockrandomization ## 67_check_clock
 
-   ## Time Sanity Check before sdwdate was executed
-   ## timesanitycheck was started at boot by /etc/init.d/timesanitycheck
    check_timesanitycheck ## 67_check_clock
-
-   run_sdwdate # 30_run-sdwdate
-
-   ## timesanitycheck
-   run_timesanitycheck ## 70_check-sdwdate
-   check_sdwdate ## 70_check-sdwdate
 
    cleanup ## 75_cleanup
 }

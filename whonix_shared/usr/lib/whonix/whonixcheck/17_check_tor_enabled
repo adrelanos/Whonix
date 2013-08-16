@@ -41,13 +41,13 @@ Please close this window and enable Tor!
     Start Menu -> Applications -> System -> First Time Connection Setup
 
     or in Terminal: sudo whonixsetup"
-      output "--warning" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
       cleanup
       return
    else
       local MSG='Tor Check Result: "DisableNetwork 1" in /etc/tor/torrc commented out, ok.'
-      #output "--info" "$MSG" "both"
+      #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    fi
 }
 

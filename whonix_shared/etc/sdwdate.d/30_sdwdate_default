@@ -29,9 +29,11 @@ INTERVAL="60"
 
 RANDOMIZE="1"
 
-DISPATCH_PRE="/usr/lib/whonix/sdwpre"
+DISPATCH_PRE="/usr/lib/whonix/sdw_pre & disown"
 
-DISPATCH_POST="/usr/bin/timesync --autostart --cron"
+DISPATCH_POST_SUCCESS="/usr/lib/whonix/sdw_post_success & disown"
+
+DISPATCH_POST_FAILURE="/usr/lib/whonix/sdw_post_failure & disown"
 
 #HTTP_USER_AGENT=""
 #HTTP_USER_AGENT="$(/usr/bin/getTorbuttonUserAgent)"

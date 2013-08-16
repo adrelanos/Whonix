@@ -17,41 +17,8 @@ welcome() {
       fi
    fi
    
-   ## Protect progress bar from starting multiple times,
-   ## to prevent flashing it over and over again.
-   if [ "$STARTED_ZENITY_BAR" = "1" ]; then   
-      return 0
-   fi
+   TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)"
 
-   local TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)"
-
-   local FIFO="$VERIFY_TEMPDIR"/zenity_fifo
-   mkfifo "$FIFO"
-
-   zenity \
-      --display="$DISPLAY" \
-      --timeout "86400" \
-      --no-markup \
-      --window-icon "$ICON" \
-      --title=" $TITLE " \
-      --auto-kill \
-      --auto-close \
-      --progress \
-      --text "$NOTIFY_MSG" \
-      < "$FIFO" & ZENITY_PROGRESS_PID="$!"
-   
-   ## "2>/dev/null" is required to hide the output "Killed zenity --display..."
-   ## later when it gets killed by the progress_bar function.
-   exec 3>"$FIFO"
-   
-   ## To get rid of the confusing
-   ## line "/usr/lib/whonix/whonixcheck/help_output: line 348:  9404 Killed [...]"
-   ## at the end.   
-   disown "$ZENITY_PROGRESS_PID"
-   
-   ## cant use this, otherwise all other output from "set -x" will no longer be visible
-   #2>/dev/null
-   
-   STARTED_ZENITY_BAR="1"
+   $output ${output_opts[@]} --progressbar --title "$TITLE" --message "$NOTIFY_MSG" --parentpid "$$" &
 }
 

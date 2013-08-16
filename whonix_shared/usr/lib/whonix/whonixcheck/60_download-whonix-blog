@@ -45,7 +45,7 @@ download_blog() {
    trap "error_handler" ERR
 
    local MSG="Whonix Blog Download: Downloading "$BLOG_NAME"..."
-   output "--info" "$MSG" "echo"
+   $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
 
    rm -f "$FEED_FILE"
    
@@ -68,7 +68,7 @@ download_blog() {
    fi
 
    local MSG="Whonix Blog Download Result: Could not download "$BLOG_NAME". (curl return code: "$DOWNLOAD_BLOG_RETURN")"
-   output "--error" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
 }
 
 parse_blog() {
@@ -100,7 +100,7 @@ parse_blog() {
       BLOG_SUCCESS="$(expr "$BLOG_SUCCESS" + 1)"      
    else
       local MSG="Whonix Blog Download Result: Could not parse "$BLOG_NAME". (rawdog return code: "$RAWDOG_RETURN")"
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi
    
@@ -118,14 +118,14 @@ parse_blog() {
       true
    else
       local MSG="Whonix Blog Download Result: Could not parse "$BLOG_NAME". (pandoc return code: "$PANDOC_RETURN")"
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi 
   
    ## Lets make just one success message, not two.
    if [ "$BLOG_SUCCESS" = "2" ]; then
       local MSG="Whonix Blog Download Result: Success."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       return 0
    fi
 }

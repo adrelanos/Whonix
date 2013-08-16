@@ -35,11 +35,12 @@ check_autostart() {
       else
          local MSG="$SCRIPTNAME has not completed for more than one day. Running $SCRIPTNAME again in "$DELAY" seconds..."
          
-         echo "$MSG" > /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting"
-         echo "--info" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessage
 
          ## "|| true", so the sleep process can be killed for debugging.
-         sleep "$DELAY" || true
+         sleep "$DELAY"
+         local sleep_pid="$!"
+         wait "$sleep_pid" || true
       fi
    else
       touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
@@ -47,11 +48,8 @@ check_autostart() {
       ## If it was run by cron and there is nothing to tell, say nothing,
       ## only send a debug message, if debugging is enabled.
       if [ "$RUN_BY_CRON" = "1" ]; then
-         local MSG="$SCRIPTNAME started by cron. $SCRIPTNAME checks completed $DIFFERENCE seconds ago. No need to run again."
-         
-         echo "$MSG" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli
-         echo "$MSG" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_x
-         echo "--info" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         local MSG="$SCRIPTNAME started by cron. $SCRIPTNAME checks completed $DIFFERENCE seconds ago. No need to run again."       
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
          
          EXIT_CODE="0"
          cleanup
@@ -59,9 +57,7 @@ check_autostart() {
       fi
 
       local MSG="No need to run $SCRIPTNAME, was run less than one day ago. You could still start $SCRIPTNAME manually."
-      echo "$MSG" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli
-      echo "$MSG" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_x
-      echo "--info" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
       
       EXIT_CODE="0"
       cleanup

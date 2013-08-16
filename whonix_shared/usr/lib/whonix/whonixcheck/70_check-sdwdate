@@ -81,7 +81,7 @@ TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
 "$SDWDATE_STATUS" Please report this bug!
 
 $HELPTEXT"
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -92,7 +92,7 @@ $HELPTEXT"
       if [ "$TIMESANITYCHECK_STATUS" = "0" ]; then
          ## Ok.
          local MSG="Last run (on "$SUCCESS_TIME") of Network Time Synchronization (timesync) was successful."
-         output "--info" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
          return 0
       else
          ## Something went wrong.
@@ -103,7 +103,7 @@ Please report this bug!
 Either timesync has a bug or this is an attack. Better manually set your clock!!!
 
 $HELPTEXT"
-         output "--error" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
          return 0
       fi
    fi
@@ -120,7 +120,7 @@ Test your internet connection: Start menu -> Applications -> System -> Whonixche
                                or in Terminal with debugging: whonixcheck -v
 
 $HELPTEXT"
-         output "--error" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
          return 0
       else
          local MSG="Network Time Synchronization (timesync) done, but no success!!!
@@ -128,7 +128,7 @@ Is your host clock slow or fast? If so, please power off, fix your host clock an
 If your host clock is sane, please report a bug.
 
 $HELPTEXT"
-         output "--error" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
          return 0
       fi
    fi
@@ -151,7 +151,7 @@ TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
 Please report this bug!
 
 $HELPTEXT"
-   output "--error" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    return 0
 }
 

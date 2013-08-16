@@ -5,7 +5,7 @@ run_sdwdate() {
 
    let "PROGRESS=$PROGRESS+5" || true
    ## The 5% indicate, that the check has begun.
-   progress_bar "$PROGRESS"
+   $output ${output_opts[@]} --progress "$PROGRESS"
 
    if [ "$RUN_BY_CRON" = "1" ]; then
       true "$SCRIPTNAME run_sdwdate: not restarting sdwdate, because started by sdwdate"
@@ -18,6 +18,6 @@ because the /etc/init.d/sdwdate init script already started sdwdate."
    fi
 
    let "PROGRESS=$PROGRESS+1" || true
-   progress_bar "$PROGRESS"
+   $output ${output_opts[@]} --progress "$PROGRESS"
 }
 

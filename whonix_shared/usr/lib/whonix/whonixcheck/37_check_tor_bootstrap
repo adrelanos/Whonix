@@ -12,14 +12,14 @@ check_tor_bootstrap() {
    tor_bootstrap_status="$(/usr/lib/whonix/whonixcheck/help_check_tor_bootstrap.py)" || { tor_bootstrap_percent="$?" ; true; }
    
    local MSG="tor_bootstrap_percent: $tor_bootstrap_percent"
-   output "--info" "$MSG" "debug"
+   $output ${output_opts[@]} --channel "debug" --type "--info" --title "$TITLE" --message "$MSG"
    local MSG="tor_bootstrap_status: $tor_bootstrap_status"
-   output "--info" "$MSG" "debug"
+   $output ${output_opts[@]} --channel "debug" --type "--info" --title "$TITLE" --message "$MSG"
    
    if [ "$tor_bootstrap_percent" = "254" ]; then
       local MSG="Tor Bootstrap Result:
 /usr/lib/whonix/whonixcheck/help_check_tor_bootstrap.py ERROR ($tor_bootstrap_percent). Please report this bug!"
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
       cleanup
       return 0
@@ -38,7 +38,7 @@ Please run whonixcheck on Whonix-Gateway."
       else
          local MSG="$FUNCNAME: This is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug!"
       fi
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
       cleanup
       return 0
@@ -46,7 +46,7 @@ Please run whonixcheck on Whonix-Gateway."
    
    if [ "$tor_bootstrap_percent" = "100" ]; then
       local MSG="Tor Bootstrap Result: Connected to Tor."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       return 0
    fi    
    
@@ -66,7 +66,7 @@ Please run whonixcheck on Whonix-Gateway."
             TOR_BOOTSTRAP_PERCENT_OLD="$tor_bootstrap_percent"
       
             local MSG="Tor Bootstrap Result: Bootstrapping for $TOR_BOOTSTRAP_TIME_PASSED seconds. $tor_bootstrap_percent % done. Tor reports: $tor_bootstrap_status"
-            output "--info" "$MSG" "echo"
+            $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       
             progress_bar "$PROGRESS"
       
@@ -79,7 +79,7 @@ Please run whonixcheck on Whonix-Gateway."
             TOR_BOOTSTRAP_PERCENT_OLD="$tor_bootstrap_percent"
          
             local MSG="Tor Bootstrap Result: Bootstrapping $TOR_BOOTSTRAP_TIME_PASSED seconds. Progress has been made. $tor_bootstrap_percent % done. Tor reports: $tor_bootstrap_status"
-            output "--info" "$MSG" "echo"
+            $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       
             progress_bar "$PROGRESS"
       
@@ -135,7 +135,7 @@ Run whonixcheck on Whonix-Gatway as well."
             
    fi
 
-   output "--error" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    EXIT_CODE="1"
    cleanup
    return 0

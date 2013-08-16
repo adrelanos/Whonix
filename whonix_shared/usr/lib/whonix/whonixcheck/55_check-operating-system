@@ -7,7 +7,7 @@ check_operating_system() {
    ## Depends on exception set in /etc/sudoers.   
    ## Minmal custom script.
    local MSG="Debian Package Update Check: Checking for software updates via apt-get..."
-   output "--info" "$MSG" "echo"
+   $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
    APT_GET_RETURN="0"
    sudo /usr/lib/whonix/whonixcheck/apt-get-update >/dev/null || { APT_GET_RETURN="$?" ; true; };
 
@@ -17,7 +17,7 @@ Could not check for software updates!
 apt-get code: $APT_GET_RETURN
 Please check manually by typing into the terminal:
 sudo apt-get update && sudo apt-get dist-upgrade"
-      output "--warning" "$MSG" "both"   
+      $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -32,7 +32,7 @@ sudo apt-get update && sudo apt-get dist-upgrade"
 
    if [ "$FIRST_CHAR" = "0" ]; then
       local MSG="Debian Package Update Check Result: No updates found via apt-get."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -50,7 +50,7 @@ Apt-get reports that "$FIRST_CHAR" packages can be updated.
 Please update Whonix-Gateway and Whonix-Workstation:
 (Open a terminal, Start menu -> Applications -> System -> Terminal.)
 sudo apt-get update && sudo apt-get dist-upgrade"
-         output "--warning" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
          return 0
       fi
    fi
@@ -60,6 +60,6 @@ Apt-get reports that "$FIRST_CHAR" packages can be updated.
 Please update Whonix-Gateway and Whonix-Workstation:
 (Open a terminal, Start menu -> Applications -> System -> Terminal.)
 sudo apt-get update && sudo apt-get dist-upgrade"
-   output "--warning" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
 } 
 

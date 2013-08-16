@@ -5,27 +5,27 @@ check_stream_isolation() {
  
    if [ "$WHONIXCHECK_DISABLE_SOCKS_PORT_TEST" = "1" ]; then
       local MSG="Stream Isolation Test: Skipped, because SocksPort test is disabled."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
    if [ "$WHONIXCHECK_DISABLE_TRANS_PORT_TEST" = "1" ]; then
       local MSG="Stream Isolation Test: Skipped, because TransPort test is disabled."
-      output "--info" "$MSG" "both"    
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
    ## Check if curl failed.
    if [ ! "$CHECK_TOR_RESULT_SOCKS_PORT" = "0" ]; then
       local MSG="Stream Isolation Test: Skipped, because SocksPort test failed! Can not test stream isolation."
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi
    
    ## Check if curl failed.
    if [ ! "$CHECK_TOR_RESULT_TRANS_PORT" = "0" ]; then
       local MSG="Stream Isolation Test: Skipped, because TransPort test failed! Can not test stream isolation."
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -37,14 +37,14 @@ check_stream_isolation() {
       ## TransPort and SocksPort have the same IP. This is sometimes normal."
    
       local MSG="Stream Isolation Test Result: TransPort and SocksPort have the same IP. This is normal."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    else
       if [ "$NOT_USING_TOR" = "1" ]; then
          local MSG="Stream Isolation Test Result: TransPort and SocksPort IPs differ, but Tor not detected! This is normal only if you're using a VPN behind Tor or specifically configured Whonix this way."
-         output "--info" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       else
          local MSG="Stream Isolation Test Result: Functional."
-         output "--info" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       fi
    fi
 }

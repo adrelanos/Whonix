@@ -15,7 +15,7 @@ donate() {
          local BITCOIN_ADDRESS="1JgzCCSox56Sh4NnQJqRiwoxKi8oVSZBEd"  
          local MSG="Please support the development of Whonix, donate Bitcoin to:
 $BITCOIN_ADDRESS"
-         output "--info" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       fi
    fi
 }

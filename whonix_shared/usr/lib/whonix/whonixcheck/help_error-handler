@@ -1,6 +1,7 @@
 #!/bin/bash
 
 error_handler() {
+   local return_code="$?"
    BUG="1"
    show_output
   
@@ -13,6 +14,7 @@ error_handler() {
 ## Please report this bug!
 ##
 ## BASH_COMMAND: $BASH_COMMAND
+## return_code: $return_code
 ##
 ## Experts only:
 ## bash -x $SCRIPTNAME --verbose
@@ -20,7 +22,5 @@ error_handler() {
 ## submit to Whonix developers.
 ###############################################################################\
 "
-   output "--error" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG" --instanttty
 } 
-
-

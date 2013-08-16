@@ -19,6 +19,6 @@ disclaimer() {
 Whonix is experimental software. Do not rely on it for strong anonymity.
 $WHONIX_HOMEPAGE"
 
-   output "--info" "$MSG" "both"
+   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
 }
 

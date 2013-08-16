@@ -1,11 +1,8 @@
 #!/bin/bash
 
 delete_old_files() {
-   rm -f "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
-   rm -f "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli"
-   rm -f "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_x"
-   rm -f "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_waiting"
-   rm -f "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress"
+   $output --forget
+   
    rm -f "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
    
    sync

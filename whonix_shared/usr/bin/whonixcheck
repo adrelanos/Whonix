@@ -14,7 +14,6 @@ ICON="/usr/share/whonix/icons/whonix.ico"
 SCRIPTNAME="$(basename $0)"
 
 source /usr/lib/whonix/whonixcheck/help_error-handler
-source /usr/lib/whonix/whonixcheck/help_output
 source /usr/lib/whonix/whonixcheck/10_preparation
 source /usr/lib/whonix/whonixcheck/help_uwt_tool
 source /usr/lib/whonix/whonixcheck/help_cli
@@ -46,21 +45,14 @@ whonixcheck_main() {
    parse_cmd_options ${1+"$@"} ## help_parse-cmd-options 
    preparation ## 10_preparation
    uwt_tool ## help_uwt_tool
-   progress_bar ## help_output
    
    if [ "$FUNCTION" = "" ]; then
       true
    else
       $FUNCTION
       return 0
-   fi
-  
-   if [ "$SHOW_X" = "1" ] || [ "$SHOW_CLI" = "1" ]; then
-      ## cleanup calls show_output
-      cleanup
-      return
-   fi
-   
+   fi 
+ 
    delete_old_files ## 16_delete_old_files
    
    ## no connection (runs only on Whonix-Gateway)
@@ -72,7 +64,7 @@ whonixcheck_main() {
    disclaimer ## 35_disclaimer
 
    ## The 5% indicate, that the check has begun.
-   progress_bar 5
+   $output ${output_opts[@]} --progress "5"
    
    if [ "$MINIMAL" = "1" ]; then
 
@@ -84,15 +76,15 @@ whonixcheck_main() {
       ## for Whonix-Workstation
       
       check_tor_bootstrap ## 37_check_tor_bootstrap
-      progress_bar 10
+      $output ${output_opts[@]} --progress "10"
 
       ## connection 1
       check_tor_socks_or_trans_port "SocksPort" ## 40_check_tor_socks_or_trans_port
-      progress_bar 15
+      $output ${output_opts[@]} --progress "15"
 
       ## connection 2
       check_tor_socks_or_trans_port "TransPort" ## 40_check_tor_socks_or_trans_port
-      progress_bar 30
+      $output ${output_opts[@]} --progress "30"
       
       ## no connection
       check_stream_isolation ## 45_check-stream-isolation
@@ -101,43 +93,43 @@ whonixcheck_main() {
       ## after checking IPs
       ## early in list, because less likely to break
       download_whonix_news ## 50_check-whonix-news
-      progress_bar 45
+      $output ${output_opts[@]} --progress "45"
 
       ## connection 4
       check_operating_system ## 55_check-operating-system
-      progress_bar 60
+      $output ${output_opts[@]} --progress "60"
 
       ## connection 5
       download_important_blog ## 60_download-whonix-blog
-      progress_bar 75
+      $output ${output_opts[@]} --progress "75"
 
       ## connection 7
       download_feature_blog ## 60_download-whonix-blog
-      progress_bar 90
+      $output ${output_opts[@]} --progress "90"
 
       ## connection 4
       check_torbrowser ## 65_check-torbrowser
-      progress_bar 95
+      $output ${output_opts[@]} --progress "95"
 
    else
       ## for Whonix-Gateway
       
       check_tor_bootstrap ## 37_check_tor_bootstrap
-      progress_bar 15
+      $output ${output_opts[@]} --progress "15"
 
       ## connection 1
       check_tor_socks_or_trans_port "SocksPort" ## 40_check_tor_socks_or_trans_port
-      progress_bar 33
+      $output ${output_opts[@]} --progress "33"
 
       ## connection 2
       ## after checking IP
       ## early in list, because less likely to break
       download_whonix_news ## 50_check-whonix-news
-      progress_bar 66
+      $output ${output_opts[@]} --progress "66"
 
       ## connection 3
       check_operating_system ## 55_check-operating-system
-      progress_bar 95
+      $output ${output_opts[@]} --progress "95"
    fi
 
    donate ## 72_donate

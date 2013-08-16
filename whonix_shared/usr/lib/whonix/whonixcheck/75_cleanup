@@ -12,44 +12,31 @@ cleanup() {
 
    true "cleanup function..."
 
-   if [ "$SHOW_CLI" = "1" ]; then
-      true
-   elif [ "$SHOW_X" = "1" ]; then
-      true
-   else
-      progress_bar 100
-   fi   
-   
-   sync
-   
-   if [ "$SHOW_CLI" = "1" ]; then
-      true
-   elif [ "$SHOW_X" = "1" ]; then
-      true
-   else  
-      rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running"
-      rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting"
-      rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_progress"
-      touch /var/run/whonix/whonixcheck/""$SCRIPTNAME"_done"
-      rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
-   fi
-   
+   $output ${output_opts[@]} --progress "100"
+ 
+   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running"
+   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting"
+   touch /var/run/whonix/whonixcheck/""$SCRIPTNAME"_done"
+   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+  
    sync
    
    ## Close pipe, which was opened for zenity.
    #exec 3>&- || true
-  
-   show_output
+
+   if [ "$AUTOSTARTED" = "1" ]; then
+      true
+   else
+      # manual run
+      $output ${output_opts[@]} --showx
+      ##$output ${output_opts[@]} --showcli
+   fi
    
    cd ..
    #if [ -d "$VERIFY_TEMPDIR" ]; then
       #rm -r "$VERIFY_TEMPDIR"
-   #fi   
-   
-   if [ "$SHOW_CLI" = "1" ]; then
-      echo "End of "$SCRIPTNAME". Feel free to press <enter> to return back to your normal prompt."
-   fi
-   
+   #fi
+  
    ## default exit code
    if [ "$EXIT_CODE" = "" ]; then
       EXIT_CODE="0"
@@ -59,5 +46,3 @@ cleanup() {
    
    exit "$EXIT_CODE"
 }
-
-

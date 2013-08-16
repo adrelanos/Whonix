@@ -1,0 +1,528 @@
+#!/bin/bash
+
+## TODO:
+
+## Auto started, there is no output channel available.
+## Therefore store this output.
+
+## If whonixcheck was run by cron, regular echos will not be shown,
+## because whonixcheck was run automatically by cron and not manually from a terminal.
+## Therefore we use "write".
+## The required "mesg y" gets set in /etc/profile.d/20_mesg.sh.
+
+#active vs passive popup?
+
+#whonix_shared/usr/lib/whonix/output --forget
+
+#whonix_shared/usr/lib/whonix/output --channel "both" --message "test message \\ \$ \(" --title "title goes here" --type --"warning"
+
+#whonix_shared/usr/lib/whonix/output --channel "both" --type "--info" --title "test title" --message "wait a bit" --waitmessage
+
+#whonix_shared/usr/lib/whonix/output --showx
+
+#whonix_shared/usr/lib/whonix/output --forgetwait
+
+#whonix_shared/usr/lib/whonix/output --progressbar
+
+#whonix_shared/usr/lib/whonix/output --progress 100
+
+SCRIPTNAME="$(basename $0)"
+
+error_handler() {
+   local return_code="$?"
+
+   local MSG="\
+###############################################################################
+## $SCRIPTNAME script bug.
+## No panic. Nothing is broken. Just some rare condition has been hit.
+## Try again later. There is likely a solution for this problem.
+## Please see Whonix News, Whonix Blog and Whonix User Help Forum.
+## Please report this bug!
+##
+## BASH_COMMAND: $BASH_COMMAND
+## return_code: $return_code
+##
+## Experts only:
+## bash -x $SCRIPTNAME --verbose
+## for verbose output. Clean the output and
+## submit to Whonix developers.
+###############################################################################\
+"
+   echo "$MSG"
+   exit 1
+} 
+
+output_sighup() {
+   trap "error_handler" ERR
+
+   ## This function is called when the cancel button in zenity gets pressed.
+
+   ## Check if still running.
+   local ps_return="0"
+   ps -p "$PARENT_PID" >/dev/null || { local ps_return="$?"; true; };
+
+   if [ "$ps_return" = "0" ]; then
+      true "$FUNCNAME caught. Killing PARENT_PID $PARENT_PID."
+      kill -SIGTERM "$PARENT_PID"
+   else
+      true "$FUNCNAME caught. Not killing PARENT_PID $PARENT_PID, because it is already terminated."
+   fi
+
+   exit 0
+}
+
+trap "output_sighup" SIGHUP
+
+parse_cmd_options() {
+   trap "error_handler" ERR
+
+   ## Thanks to:
+   ## http://mywiki.wooledge.org/BashFAQ/035
+
+   while :
+   do
+       case $1 in
+           --verbose)
+               VERBOSE="1"
+               shift
+               ;;
+           --debug)
+               DEBUG="1"
+               shift
+               ;;
+           --identifier)
+               IDENTIFIER="$2"
+               shift 2
+               ;;
+           --display)
+               display="$2"
+               shift 2
+               ;;               
+           --parentpid)
+               PARENT_PID="$2"
+               shift 2
+               ;;
+           --progressbar)
+               PROGRESSBAR="1"
+               shift
+               ;;
+           --progress)
+               PROGRESS="$2"
+               shift 2
+               ;;               
+           --type)
+               TYPE="$2"
+               shift 2
+               ;;
+           --channel)
+               CHANNEL="$2"
+               shift 2
+               ;;
+           --message)
+               MESSAGE="$2"
+               shift 2
+               ;;
+           --title)
+               TITLE="$2"
+               shift 2
+               ;;
+           --waitmessage)
+               WAIT_MESSAGE=1
+               shift
+               ;;
+           --instantecho)
+               INSTANT_ECHO="1"
+               shift
+               ;;
+           --instanttty)
+               INSTANT_TTY="1"
+               shift
+               ;;             
+           --nonewlinex)
+               NONEWLINEX="1"
+               shift
+               ;;
+           --nonewlinecli)
+               NONEWLINECLI="1"
+               shift
+               ;;
+           --forget)
+               FORGET="1"
+               shift
+               ;;
+           --forgetwait)
+               FORGET_WAIT="1"
+               shift
+               ;;               
+           --showcli)
+               SHOW_CLI="1"
+               shift
+               ;;
+           --showx)
+               SHOW_X="1"
+               shift
+               ;;
+           --icon)
+               ICON="$2"
+               shift 2
+               ;;
+           --passive)
+               PASSIVE="1"
+               shift
+               ;;
+           --)
+               shift
+               break
+               ;;
+           -*)
+               echo "$SCRIPTNAME unknown option: $TYPE" >&2
+               exit 1
+               ;;
+           *)
+               break
+               ;;
+       esac
+   done
+
+   ## If there are input files (for example) that follow the options, they
+   ## will remain in the "$@" positional parameters.
+}
+
+start_progress_bar() {
+   trap "error_handler" ERR
+
+   local TITLE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title")"
+
+   local FIFO="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo"
+
+   ## Clean up eventual old progress bar.
+   rm --force "$FIFO"
+   
+   mkfifo "$FIFO"
+
+   zenity \
+      --display="$display" \
+      --timeout "86400" \
+      --no-markup \
+      --window-icon "$ICON" \
+      --title=" $TITLE " \
+      --auto-kill \
+      --auto-close \
+      --progress 10 \
+      --text "$MESSAGE" \
+      < "$FIFO" & ZENITY_PROGRESS_PID="$!"      
+
+   ## "2>/dev/null" is required to hide the output "Killed zenity --display..."
+   ## later when it gets killed by the progress_bar function.
+   exec 3>"$FIFO"
+
+   echo "$ZENITY_PROGRESS_PID" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
+
+   ## Waiting for SIGHUP.
+   wait
+}
+
+progress_bar() {
+   trap "error_handler" ERR
+
+   ZENITY_PROGRESS_PID="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid")" || true
+
+   if [ -p "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo" ]; then
+      local FIFO="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo"
+   else
+      return 0
+   fi
+
+   ## Check if zenity is still running.
+   local ps_return="0"
+   ps -p "$ZENITY_PROGRESS_PID" >/dev/null || { local ps_return="$?"; true; };
+
+   if [ "$ps_return" = "0" ]; then
+      ## Zenity pid is still active.
+
+      ## For extra security against freezing while trying to write to a non-existing pipe, lets use timeout.
+      ## || true to catch an error if the pipe no longer exists.
+      timeout 1 /bin/bash -c "echo "$1" > "$FIFO"" || true
+   fi
+}
+
+fallbacks() {
+   ## Check if zenity is installed.
+   ## - This is not the case for cli users,
+   ##   who removed zenity or custom builds which never had zenity installed.
+   if [ "$(which zenity)" = "" ]; then
+      ## zenity is not installed.
+      #echo "help_output: zenity not found."
+      zenity() {
+         ## dummy
+         true
+      }
+      return 0
+   fi
+
+   ## Only use progress meter if we are running in X.
+   if [ ! "$DISPLAY" ]; then
+      zenity() {
+         ## dummy
+         true
+      }
+      return 0
+   fi
+
+   ## check if kdialog is installed
+   ## - that is not the case for CLI Custom-Workstation users
+   ## - that is also not the case on Whonix-Gateway
+   if [ "$(which kdialog)" = "" ]; then
+      #echo "help_output: kdialog not found."
+      kdialog() {
+         ## dummy
+         true
+      }
+   fi
+}
+
+output() {
+   trap "error_handler" ERR
+
+   echo "$TITLE" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title"
+
+   if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" ]; then
+      OLD_TYPE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type")"
+   fi
+
+   if [ "$TYPE" = "" ]; then
+      error "ERROR: You forgot --type."
+   fi
+
+   if [ "$TYPE" = "--info" ] || [ "$TYPE" = "--warning" ] || [ "$TYPE" = "--error" ]; then
+      true
+   else
+      error "ERROR: Invalid type. Must be --info, --warning or --error."
+   fi
+
+   if [ "$OLD_TYPE" = "--info" ]; then
+      if [ "$TYPE" = "--error" ]; then
+         ## Upgrade from --info to --error.
+         echo "--error" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+      elif [ "$TYPE" = "--warning" ]; then
+         ## Upgrade from --info to --warning.
+         echo "--warning" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+      fi
+   elif [ "$OLD_TYPE" = "--warning" ]; then
+      if [ "$TYPE" = "--error" ]; then
+         ## Upgrade from --warning to --error.
+         echo "--error" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+      fi
+   elif [ "$OLD_TYPE" = "--error" ]; then
+      true
+   else
+      echo "$TYPE" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+   fi
+
+   if [ "$PASSIVE" = "1" ]; then
+      touch "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
+   else
+      rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
+   fi
+
+   if [ "$WAIT_MESSAGE" = "1" ]; then
+      local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli"
+      local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x"
+   else
+      local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli"
+      local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x"
+   fi
+
+   if [ "$CHANNEL" = "debug" ]; then
+      if [ "$VERBOSE" = "1" ]; then
+         if [ "$INSTANT_TTY" = 1 ]; then
+            echo "$MESSAGE" | write user tty1 2>/dev/null || true
+         fi
+         if [ "$INSTANT_ECHO" = "1" ]; then
+            echo "$MESSAGE"
+         fi
+      else
+         true "$MESSAGE"
+      fi
+   elif [ "$CHANNEL" = "echo" ]; then
+      if [ "$INSTANT_ECHO" = "1" ]; then
+         echo "$MESSAGE"
+      fi
+      if [ "$INSTANT_TTY" = "1" ]; then
+         echo "$MESSAGE" | write user tty1 2>/dev/null || true
+      fi
+      if [ "$NONEWLINECLI" = "1" ]; then
+         echo "$MESSAGE" >> "$file_cli"     
+      else
+         echo "
+$MESSAGE" >> "$file_cli"         
+      fi
+   elif [ "$CHANNEL" = "both" ]; then
+      if [ "$INSTANT_ECHO" = "1" ]; then
+         echo "$MESSAGE"
+      fi
+      if [ "$INSTANT_TTY" = "1" ]; then
+         echo "$MESSAGE" | write user tty1 2>/dev/null || true
+      fi
+      if [ "$NONEWLINECLI" = "1" ]; then
+         echo "$MESSAGE" >> "$file_cli"
+      else
+         echo "
+$MESSAGE" >> "$file_cli"
+      fi
+      if [ "$NONEWLINEX" = "1" ]; then
+         echo "$MESSAGE" >> "$file_x"
+      else
+         echo "
+$MESSAGE" >> "$file_x"         
+      fi
+   else
+      error "$SCRIPTNAME output unknown OUTPUT_CHANNEL: $CHANNEL"
+   fi
+}
+
+show_output() {
+   trap "error_handler" ERR
+
+   if [ -e "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" ]; then
+      TYPE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type")"
+   else
+      error "ERROR: No type stored."
+   fi
+
+   local temp="?"
+   if [ "$TYPE" = "--error" ]; then
+      local temp="ERROR"
+   fi
+   if [ "$TYPE" = "--warning" ]; then
+      local temp="WARNING"
+   fi
+   if [ "$TYPE" = "--info" ]; then
+      local temp="Info"
+   fi
+
+   local TITLE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title")"
+   local TITLE="$temp $TITLE"
+
+   if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive" ]; then
+      PASSIVE="1"
+   fi
+
+   if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli" ]; then
+      MESSAGE_CLI="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli)"
+      MESSAGE_X="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x)"
+      LOOP="1"
+   else
+      MESSAGE_CLI="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli)"
+      MESSAGE_X="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x)"
+      LOOP="0"
+      SHOW_WAIT_MESSAGE_ONLY_ONCE="0"
+   fi
+
+   ## was started with --showcli
+   ## (was automatically started by /etc/profile.d/)
+   if [ "$SHOW_CLI" = "1" ]; then 
+      if [ "$SHOW_WAIT_MESSAGE_ONLY_ONCE" = "1" ]; then
+         true
+      else
+         echo "$TITLE
+$MESSAGE_CLI" | write user tty1 2>/dev/null || true
+         SHOW_WAIT_MESSAGE_ONLY_ONCE="1"
+      fi
+
+      if [ "$LOOP" = "1" ]; then
+         sleep 3
+         show_output
+      fi
+      return 0
+   fi
+
+   ## was started with --showx
+   ## (was automatically started by /etc/xdg/autostart/)
+   if [ "$SHOW_X" = "1" ]; then
+      if [ "$SHOW_WAIT_MESSAGE_ONLY_ONCE" = "1" ]; then
+         true
+      else   
+         if [ "$PASSIVE" = "1" ] || [ "$LOOP" = "1" ]; then
+            kdialog --passivepopup "$MESSAGE_X" "20"
+         else
+            zenity \
+               --display="$DISPLAY" \
+               --height=600 \
+               --width=800 \
+               --timeout 86400 \
+               --no-markup \
+               --window-icon "$ICON" \
+               --title="$TITLE" \
+               "$TYPE" \
+               --text "
+$IDENTIFIER
+----------------------------------------------------------------------
+$MESSAGE_X" \
+               2>/dev/null \
+               || true
+         fi                  
+         SHOW_WAIT_MESSAGE_ONLY_ONCE="1"
+      fi
+
+      if [ "$LOOP" = "1" ]; then
+         sleep 3
+         show_output
+      fi
+      
+      return 0
+   fi
+}
+
+forget_messages() {
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_progress"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
+}
+
+forget_wait() {
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x"
+   rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli"
+}
+
+parse_cmd_options ${1+"$@"}
+fallbacks
+
+if [ "$PROGRESSBAR" = "1" ]; then
+   if [ "$PARENT_PID" = "" ]; then
+      echo "$SCRIPTNAME ERROR: --parentpid required!" >&2
+      exit 1
+   fi
+   start_progress_bar
+   exit 0
+fi
+
+if [ "$PROGRESS" = "" ]; then
+   true
+else
+   progress_bar "$PROGRESS"
+   exit 0
+fi
+
+if [ "$SHOW_CLI" = "1" ] || [ "$SHOW_X" = "1" ]; then
+   show_output
+   exit 0
+fi
+
+if [ "$FORGET" = "1" ]; then
+   forget_messages
+   exit 0
+fi
+
+if [ "$FORGET_WAIT" = "1" ]; then
+   forget_wait
+   exit 0
+fi
+
+output
+

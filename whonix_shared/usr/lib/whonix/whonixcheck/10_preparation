@@ -39,23 +39,33 @@ get_local_whonix_version() {
 preparation() {
    trap "error_handler" ERR
 
-   if [ "$SHOW_CLI" = "1" ]; then
-      true
-   elif [ "$SHOW_X" = "1" ]; then
-      true
-   else
-      if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid" ]; then
-         local oldpid="$(cat /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid")"
-         kill -15 "$oldpid" > /dev/null 2>&1 || true         
-         kill -9 "$oldpid" > /dev/null 2>&1 || true
-      fi   
-   
-      rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_done"
-      touch /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running"
-      echo "$BASHPID" > /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+   if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid" ]; then
+      local oldpid="$(cat /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid")"
+      kill -15 "$oldpid" > /dev/null 2>&1 || true
+      kill -9 "$oldpid" > /dev/null 2>&1 || true
    fi
    
+   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_done"
+   touch /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running"
+   echo "$BASHPID" > /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+   
    sync
+
+   if [ "$display" = "" ]; then
+      display="$DISPLAY"
+   fi  
+
+   output="/usr/lib/whonix/output"
+
+   output_opt_1="--icon $ICON"
+   output_opt_2="--display $display"
+   output_opt_3="--identifier $SCRIPTNAME"
+   output_opt_4="--instantecho"
+   output_opt_5="--nonewlinecli"
+
+   output_opts=( "$output_opt_1" "$output_opt_2" "$output_opt_3" "$output_opt_4" "$output_opt_5")
+
+   $output ${output_opts[@]} --forget
    
    USERNAME="user"
    WHONIX_HOMEPAGE="https://www.whonix.org"

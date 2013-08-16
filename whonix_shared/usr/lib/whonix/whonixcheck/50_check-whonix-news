@@ -6,7 +6,7 @@ download_whonix_news() {
    SOCKS_PORT_WHONIX_NEWS="9114"
 
    local MSG="Whonix News Download: Checking for Whonix news and updates..."
-   output "--info" "$MSG" "echo"
+   $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
    
    mkdir --parents ""$VERIFY_TEMPDIR"/news"
    
@@ -42,7 +42,7 @@ download_whonix_news() {
 
       if [ ! "${DOWNLOAD_NEWS_RETURN[$LINK]}" = "0" ]; then
          local MSG="Whonix News Result: Could not download Whonix News File "$FILENAME". (curl return code: "${DOWNLOAD_NEWS_RETURN[$LINK]}")"
-         output "--error" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       fi
    
    done
@@ -80,7 +80,7 @@ verify_whonix_news() {
    if [ ! "$NEWS_VERIFY_RETURN_GENERAL" = "0" ]; then
       local MSG="Whonix News Download Result:
 General Whonix News OpenPGP Verification Error. Please report this bug!"
-         output "--error" "$MSG" "both"   
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -108,13 +108,13 @@ General Whonix News OpenPGP Verification Error. Please report this bug!"
 
       if [ "${NEWS_VERIFY_RETURN[$LINK]}" = "0" ]; then
          local MSG="Whonix News Download: Successfully verified "$FILENAME" via OpenPGP."
-         output "--info" "$MSG" "debug"
+         $output ${output_opts[@]} --channel "debug" --type "--info" --title "$TITLE" --message "$MSG"
       else
          local MSG="Whonix News Download Result:
 Could not OpenPGP verify authenticity of Whonix News "$FILENAME"!!!
 (gpg return code: "${NEWS_VERIFY_RETURN[$LINK]}")
 This is either a Whonix Bug or an attack on Whonix!!!"
-         output "--error" "$MSG" "both"
+         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       fi
    done
 }
@@ -148,13 +148,13 @@ check_whonix_debian_version() {
    if [ "$outdated_deb" = "0" ]; then
       ## Up to date...
       local MSG="Whonix News Download Result: Installed Whonix Debian Package $INSTALLED_WHONIX_VERSION is up to date."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    else
       ## Outdated...
       local MSG="Whonix News Download Result:
 Installed Whonix Debian Package $INSTALLED_WHONIX_VERSION is outdated! You can automatically update using Whonix's internal updater. Please update using:
 sudo apt-get update && sudo apt-get dist-upgrade"
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    fi
 }
 
@@ -187,13 +187,13 @@ check_whonix_build_version() {
    if [ "$outdated_build" = "0" ]; then
       ## Up to date...
       local MSG="Whonix News Download Result: Installed Whonix Build $WHONIX_BUILD_VERSION is up to date."
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    else
       ## Outdated...
       local MSG="Whonix News Download Result:
 Whonix Build $WHONIX_BUILD_VERSION is outdated!
 Sorry, automatically updating this Whonix version is not possible. You have to manually download a new Whonix image."
-      output "--error" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    fi
 }
 
@@ -219,7 +219,7 @@ check_whonix_debian_news() {
    if [ "$MSG" = "" ]; then
       true
    else
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    fi
 }
 
@@ -243,7 +243,7 @@ check_whonix_build_news() {
    if [ "$MSG" = "" ]; then
       true
    else
-      output "--info" "$MSG" "both"
+      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
    fi
 }
 
