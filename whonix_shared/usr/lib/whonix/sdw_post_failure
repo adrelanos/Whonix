@@ -1,5 +1,49 @@
 #!/bin/bash
 
-sudo -u user /bin/bash -x /usr/bin/timesync --autostart --cron
+#set -x
 
-exit 0
+NOTIFY_MSG="Running Secure Network Time Synchronization (timesync)...
+This will happen in background and will take approximately 60 seconds.
+
+For better anonymity, please do use the internet in Whonix until timesync succeeded."
+
+ICON="/usr/share/whonix/icons/timesync.ico"
+
+SCRIPTNAME="$(basename $0)"
+IDENTIFIER="timesync"
+
+source /usr/lib/whonix/whonixcheck/help_error-handler
+source /usr/lib/whonix/whonixcheck/help_output
+source /usr/lib/whonix/whonixcheck/10_preparation
+source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
+source /usr/lib/whonix/whonixcheck/67_check_clock
+source /usr/lib/whonix/whonixcheck/70_check-sdwdate
+source /usr/lib/whonix/whonixcheck/75_cleanup
+
+timesync_main() {
+   trap "error_handler" ERR
+
+   RUN_BY_CRON="1"
+
+   preparation ## 10_preparation
+
+   $output ${output_opts[@]} --forget
+
+   if [ "$FUNCTION" = "" ]; then
+      true
+   else
+      $FUNCTION
+      return 0
+   fi
+
+   check_tor_enabled ## 17_check_tor_enabled
+
+   check_bootclockrandomization ## 67_check_clock
+
+   check_timesanitycheck ## 67_check_clock
+
+   #cleanup ## 75_cleanup
+}
+
+timesync_main ${1+"$@"}
+

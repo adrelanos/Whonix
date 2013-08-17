@@ -51,7 +51,7 @@ Try: Start menu -> Applications -> System -> Tor Browser Updater"
    else
       TBBINSTALLEDVERSION="UNKNOWN"
       local MSG="Tor Browser Update Check Result:
-Could not determine currently installed Tor Browser version.\
+Could not determine currently installed Tor Browser version. \
 This could be either because none is installed or because the version format changed.
 
 Try: Start menu -> Applications -> System -> Tor Browser Updater"

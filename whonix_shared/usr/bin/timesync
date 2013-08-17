@@ -10,11 +10,11 @@ For better anonymity, please do use the internet in Whonix until timesync succee
 ICON="/usr/share/whonix/icons/timesync.ico"
 
 SCRIPTNAME="$(basename $0)"
+IDENTIFIER="timesync"
 
 source /usr/lib/whonix/whonixcheck/help_error-handler
 source /usr/lib/whonix/whonixcheck/help_cli
 source /usr/lib/whonix/whonixcheck/help_parse-cmd-options
-source /usr/lib/whonix/whonixcheck/help_output
 source /usr/lib/whonix/whonixcheck/10_preparation
 source /usr/lib/whonix/whonixcheck/16_delete_old_files
 source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
@@ -30,6 +30,8 @@ timesync_main() {
   
    parse_cmd_options ${1+"$@"} ## help_parse-cmd-options 
    preparation ## 10_preparation
+
+   $output ${output_opts[@]} --forget
    
    if [ "$FUNCTION" = "" ]; then
       true
@@ -37,9 +39,7 @@ timesync_main() {
       $FUNCTION
       return 0
    fi
-   
-   delete_old_files ## 16_delete_old_files
-   
+ 
    welcome ## 20_welcome
    disclaimer ## 25_disclaimer
    check_tor_enabled ## 17_check_tor_enabled
@@ -51,11 +51,18 @@ timesync_main() {
 
    run_sdwdate # 30_run-sdwdate
 
-   ## timesanitycheck
-   run_timesanitycheck ## 70_check-sdwdate
+   run_timesanitycheck ## 67_check_clock
+
    check_sdwdate ## 70_check-sdwdate
 
    cleanup ## 75_cleanup
+
+   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showcli
+   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showx
+
+   true "END"
+
+   exit "$EXIT_CODE"   
 }
 
 timesync_main ${1+"$@"}

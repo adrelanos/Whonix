@@ -1,12 +1,5 @@
 #!/bin/bash
 
-run_timesanitycheck() {
-   trap "error_handler" ERR
-
-   ## There is an exception in /etc/sudoers.d/timesanitycheck.
-   sudo service timesanitycheck restart
-}
-
 check_sdwdate_status() {
    trap "error_handler" ERR
 
@@ -54,9 +47,15 @@ Last resort: manually set the clock! (In UTC!):
    local TIMESANITYCHECK_STATUS=0
    ## There is an exception in /etc/sudoers.d/timesanitycheck.
    sudo service timesanitycheck status || { local TIMESANITYCHECK_STATUS="$?" ; true; };
+ 
+   if [ "$TIMESANITYCHECK_STATUS" = "0" ]; then
+      TIMESANITYCHECK_STATUS_WORD="Success"
+   else
+      TIMESANITYCHECK_STATUS_WORD="Fail"
+   fi
 
    let "PROGRESS=$PROGRESS+1" || true
-   progress_bar $PROGRESS
+   $output ${output_opts[@]} --progress "$PROGRESS"
 
    TIME_END="$(date +%s)"
    TIME_DIFF="$(expr "$TIME_END" - "$TIME_START")" || true
@@ -77,7 +76,7 @@ Last resort: manually set the clock! (In UTC!):
    if [ "$SDWDATE_STATUS" = "NO_PID_FILE" ] || [ "$SDWDATE_STATUS" = "NO_PID_PROCESS" ]; then
       ## If there is no pid file or no process after we restarted sdwdate, it is a bug.
       local MSG="Network Time Synchronization (timesync) failed!!!
-TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
+TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS_WORD"
 "$SDWDATE_STATUS" Please report this bug!
 
 $HELPTEXT"
@@ -92,7 +91,7 @@ $HELPTEXT"
       if [ "$TIMESANITYCHECK_STATUS" = "0" ]; then
          ## Ok.
          local MSG="Last run (on "$SUCCESS_TIME") of Network Time Synchronization (timesync) was successful."
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
          return 0
       else
          ## Something went wrong.
@@ -137,7 +136,8 @@ $HELPTEXT"
 
    if [ "$WAIT_RESULT" -gt "0" ]; then
       #echo "check_sdwdate debug info: Not done. Waiting up to $WAIT_RESULT more seconds."
-      sleep 7
+      sleep "7"
+      wait "$!" || true
       check_sdwdate
       return 0
    fi
@@ -147,7 +147,7 @@ $HELPTEXT"
    ## Should not happen, because sdwdate has its own timeout.
    local MSG="Network Time Synchronization failed!!!
 SDWDATE_STATUS: "$SDWDATE_STATUS"
-TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS"
+TIMESANITYCHECK_STATUS: "$TIMESANITYCHECK_STATUS_WORD"
 Please report this bug!
 
 $HELPTEXT"

@@ -1,6 +1,10 @@
 #!/bin/bash
 
 trap_sigterm() {
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_running"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_waiting"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_pid"
+   
    echo "$SCRIPTNAME: SIGTERM received. Exiting."
    exit 0
 }
@@ -14,10 +18,11 @@ cleanup() {
 
    $output ${output_opts[@]} --progress "100"
  
-   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running"
-   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting"
-   touch /var/run/whonix/whonixcheck/""$SCRIPTNAME"_done"
-   rm -f /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_running"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_waiting"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_pid"
+   
+   touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_done"
   
    sync
    
@@ -27,8 +32,9 @@ cleanup() {
    if [ "$AUTOSTARTED" = "1" ]; then
       true
    else
+      true
       # manual run
-      $output ${output_opts[@]} --showx
+      #$output ${output_opts[@]} --showx
       ##$output ${output_opts[@]} --showcli
    fi
    
@@ -41,8 +47,4 @@ cleanup() {
    if [ "$EXIT_CODE" = "" ]; then
       EXIT_CODE="0"
    fi
-   
-   true "END"
-   
-   exit "$EXIT_CODE"
 }

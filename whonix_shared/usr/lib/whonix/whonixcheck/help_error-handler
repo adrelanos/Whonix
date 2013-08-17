@@ -3,7 +3,6 @@
 error_handler() {
    local return_code="$?"
    BUG="1"
-   show_output
   
    local MSG="\
 ###############################################################################

@@ -44,6 +44,9 @@ whonixcheck_main() {
 
    parse_cmd_options ${1+"$@"} ## help_parse-cmd-options 
    preparation ## 10_preparation
+
+   $output ${output_opts[@]} --forget
+   
    uwt_tool ## help_uwt_tool
    
    if [ "$FUNCTION" = "" ]; then
@@ -135,6 +138,10 @@ whonixcheck_main() {
    donate ## 72_donate
    whonixcheck_completed ## 20_check-lastrun
    cleanup ## 75_cleanup
+
+   true "END"
+
+   exit "$EXIT_CODE"    
 }
 
 whonixcheck_main ${1+"$@"}

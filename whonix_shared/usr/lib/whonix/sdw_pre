@@ -10,9 +10,11 @@ For better anonymity, please do use the internet in Whonix until timesync succee
 ICON="/usr/share/whonix/icons/timesync.ico"
 
 SCRIPTNAME="$(basename $0)"
+IDENTIFIER="timesync"
 
 source /usr/lib/whonix/whonixcheck/help_error-handler
 source /usr/lib/whonix/whonixcheck/help_output
+source /usr/lib/whonix/whonixcheck/10_preparation
 source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
 source /usr/lib/whonix/whonixcheck/67_check_clock
 source /usr/lib/whonix/whonixcheck/70_check-sdwdate
@@ -22,6 +24,10 @@ timesync_main() {
    trap "error_handler" ERR
 
    RUN_BY_CRON="1"
+
+   preparation ## 10_preparation
+
+   $output ${output_opts[@]} --forget
 
    if [ "$FUNCTION" = "" ]; then
       true
@@ -36,9 +42,8 @@ timesync_main() {
 
    check_timesanitycheck ## 67_check_clock
 
-   cleanup ## 75_cleanup
+   #cleanup ## 75_cleanup
 }
 
 timesync_main ${1+"$@"}
 
-## End of timesync script.

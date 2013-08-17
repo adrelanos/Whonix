@@ -5,12 +5,7 @@
 if [ ! "$(tty)" = "/dev/tty1" ]; then
    return 0
 else
-
-   if [ ! -f /var/run/whonix/whonixcheck/whonixcheck_done ]; then
-      echo "Waiting for results from Whonix Check..."
-   fi
-   
-   /usr/lib/whonix/delay whonixcheck --showcli & disown
+   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier whonixcheck --icon /usr/share/whonix/icons/whonix.ico --showcli & disown
 fi
 
 ## End of Whonix /etc/profile.d/40_whonixcheck.sh

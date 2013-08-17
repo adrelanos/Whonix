@@ -288,7 +288,7 @@ sdwdate_parse_cmd_options() {
                shift 2
                ;;
            -z | --dispatchpostfailure)
-               DISPATCH_POST_FAILURE =$2
+               DISPATCH_POST_FAILURE=$2
                shift 2
                ;;              
            -q | --quiet)
@@ -300,7 +300,7 @@ sdwdate_parse_cmd_options() {
                break
                ;;
            -*)
-               echo "$SCRIPTNAME unknown option: $1" >&2
+               sdwdate_log "$SCRIPTNAME unknown option: $1" >&2
                exit 1
                ;;
            *)
@@ -332,6 +332,25 @@ sdwdate_preparation() {
    else
       CURL_USER_AGENT="--user-agent $HTTP_USER_AGENT"
    fi
+
+   local ret="0"
+   which curl.real >/dev/null || { local ret="$?" ; true; };
+
+   if [ "$ret" = "0" ]; then
+      ## using the non-uwt-wrapped version, if the uwt wrapper is installed,
+      ## which is the case on a default Whonix installation
+      CURL=curl.real
+   else
+      local ret="0"
+      which curl >/dev/null || { local ret="$?" ; true; };
+      if [ "$ret" = "0" ]; then
+         ## falling back to real curl, if the uwt wrapper has been uninstalled
+         CURL=curl
+      else
+         sdwdate_log "$FUNCNAME: Can not find curl. Please report this bug!"
+         exit 1
+      fi
+   fi    
 }
 
 sdwdate_log() {
@@ -392,7 +411,7 @@ sdwdate_download() {
    local TIME_START="$(date +%s)"
    
    ## --fail not required, because also 404 would include head, which is all we need
-   curl \
+   $CURL \
       --tlsv1 \
       --proto =https \
       --max-time 180 \

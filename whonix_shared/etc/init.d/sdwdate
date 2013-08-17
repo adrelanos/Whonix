@@ -38,7 +38,8 @@ log() {
 
 do_start_nd() {
    ND_PRE="--dispatchpre true"
-   ND_POST="--dispatchpost true"
+   ND_POST_SUCCESS="--dispatchpostsuccess true"
+   ND_POST_FAILURE="--dispatchpostfailure true"
    do_start
 }
 
@@ -74,7 +75,7 @@ INFO: Whonix /etc/init.d/timesync
 	   --pidfile "$PIDFILE" \
 	   --make-pidfile \
 	   --background \
-	   --exec /usr/bin/sdwdate -- $ND_PRE $ND_POST
+	   --exec /usr/bin/sdwdate -- $ND_PRE $ND_POST_SUCCESS $ND_POST_FAILURE
 
 	return $?
 }

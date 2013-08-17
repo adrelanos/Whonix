@@ -2,6 +2,9 @@
 
 check_tor_bootstrap() {
    trap "error_handler" ERR
+
+   ## Sometimes it does not work on the first run. Small hack.
+   /usr/lib/whonix/whonixcheck/help_check_tor_bootstrap.py >/dev/null || true
    
    if [ "$TOR_BOOTSTRAP_TIME_START" = "" ]; then
       TOR_BOOTSTRAP_TIME_START="$(date +%s)"
@@ -68,9 +71,10 @@ Please run whonixcheck on Whonix-Gateway."
             local MSG="Tor Bootstrap Result: Bootstrapping for $TOR_BOOTSTRAP_TIME_PASSED seconds. $tor_bootstrap_percent % done. Tor reports: $tor_bootstrap_status"
             $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       
-            progress_bar "$PROGRESS"
+            $output ${output_opts[@]} --progress "$PROGRESS"
       
-            sleep 2
+            sleep "$2" &
+            wait "$!" || true
       
             check_tor_bootstrap
             return 0
@@ -81,9 +85,10 @@ Please run whonixcheck on Whonix-Gateway."
             local MSG="Tor Bootstrap Result: Bootstrapping $TOR_BOOTSTRAP_TIME_PASSED seconds. Progress has been made. $tor_bootstrap_percent % done. Tor reports: $tor_bootstrap_status"
             $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
       
-            progress_bar "$PROGRESS"
+            $output ${output_opts[@]} --progress "$PROGRESS"
       
-            sleep 2
+            sleep "$2" &
+            wait "$!" || true
       
             check_tor_bootstrap
             return 0         

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+run_timesanitycheck() {
+   trap "error_handler" ERR
+
+   ## There is an exception in /etc/sudoers.d/timesanitycheck.
+   sudo service timesanitycheck restart
+}
+
 check_bootclockrandomization() {
    trap "error_handler" ERR
 

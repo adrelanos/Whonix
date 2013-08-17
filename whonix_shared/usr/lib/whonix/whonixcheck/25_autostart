@@ -13,17 +13,23 @@ check_autostart() {
       return 0
    fi
 
-   ## To prevent issuing leaving a clear network fingerprint,
-   ## we add a random delay.
+   ## Random delay, unless started with --sleepseconds, which is the default.
+   ## --sleepseconds is only a debugging option.
+   if [ "$SLEEP_SECONDS" = "" ]; then   
+      ## To prevent issuing leaving a clear network fingerprint,
+      ## we add a random delay.
 
-   ## Random delay between 0 and 500 seconds.
-   local DELAY="$(( 100+($(od -An -N2 -i /dev/random) )%(300-0+1) ))"
+      ## Random delay between 0 and 500 seconds.
+      local DELAY="$(( 100+($(od -An -N2 -i /dev/random) )%(300-0+1) ))"
 
-   ## 60 seconds minimum delay.
-   local DELAY="$(expr "$DELAY" + "60")" || true
+      ## 60 seconds minimum delay.
+      local DELAY="$(expr "$DELAY" + "60")" || true
 
-   ## For debugging.
-   #local DELAY="10"
+      ## For debugging.
+      #local DELAY="10"
+   else
+      DELAY="$SLEEP_SECONDS"
+   fi
 
    if [ "$NOCHECKLASTRUN" = "1" ]; then
       RECENTLY_RUN="0"
@@ -37,10 +43,12 @@ check_autostart() {
          
          $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessage
 
+         ## Using wait, so we can still react on signal SIGTERM.
          ## "|| true", so the sleep process can be killed for debugging.
-         sleep "$DELAY"
-         local sleep_pid="$!"
-         wait "$sleep_pid" || true
+         sleep "$DELAY" &
+         wait "$!" || true
+
+         $output ${output_opts[@]} --forgetwait
       fi
    else
       touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
@@ -49,7 +57,7 @@ check_autostart() {
       ## only send a debug message, if debugging is enabled.
       if [ "$RUN_BY_CRON" = "1" ]; then
          local MSG="$SCRIPTNAME started by cron. $SCRIPTNAME checks completed $DIFFERENCE seconds ago. No need to run again."       
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
+         #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
          
          EXIT_CODE="0"
          cleanup
