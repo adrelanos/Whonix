@@ -192,7 +192,7 @@ https://metrics.torproject.org/exonerator.html"
 
             $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
             EXIT_CODE="1"
-            cleanup
+            cleanup "1"
             return 0
          fi
       elif [ "$1" = "SocksPort" ]; then
@@ -211,7 +211,7 @@ You could try to find out if this IP is/was a Tor exit node using a search engin
 https://metrics.torproject.org/exonerator.html"
          $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
          EXIT_CODE="1"
-         cleanup
+         cleanup "1"
          return 0
       fi
    fi

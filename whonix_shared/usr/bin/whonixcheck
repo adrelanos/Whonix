@@ -7,11 +7,12 @@
 #set -x
 
 NOTIFY_MSG="Checking Tor Connection, Tor Browser Version, Operating System Updates, Whonix Version, Whonix News...
-This will happen in background and will take approximately three minutes."
+This will happen in background and will take approximately three minutes..."
 
 ICON="/usr/share/whonix/icons/whonix.ico"
 
 SCRIPTNAME="$(basename $0)"
+IDENTIFIER="$SCRIPTNAME"
 
 source /usr/lib/whonix/whonixcheck/help_error-handler
 source /usr/lib/whonix/whonixcheck/10_preparation
@@ -138,10 +139,6 @@ whonixcheck_main() {
    donate ## 72_donate
    whonixcheck_completed ## 20_check-lastrun
    cleanup ## 75_cleanup
-
-   true "END"
-
-   exit "$EXIT_CODE"    
 }
 
 whonixcheck_main ${1+"$@"}

@@ -24,7 +24,7 @@ check_tor_bootstrap() {
 /usr/lib/whonix/whonixcheck/help_check_tor_bootstrap.py ERROR ($tor_bootstrap_percent). Please report this bug!"
       $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
-      cleanup
+      cleanup "1"
       return 0
    fi
    
@@ -43,7 +43,7 @@ Please run whonixcheck on Whonix-Gateway."
       fi
       $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
-      cleanup
+      cleanup "1"
       return 0
    fi
    
@@ -142,7 +142,7 @@ Run whonixcheck on Whonix-Gatway as well."
 
    $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
    EXIT_CODE="1"
-   cleanup
+   cleanup "1"
    return 0
 } 
 

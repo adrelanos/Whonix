@@ -39,9 +39,13 @@ check_autostart() {
       if [ "$NOSLEEP" = "1" ]; then
          return 0
       else
-         local MSG="$SCRIPTNAME has not completed for more than one day. Running $SCRIPTNAME again in "$DELAY" seconds..."
+         local temp="$SCRIPTNAME has not completed for more than one day. Running $SCRIPTNAME again in "$DELAY" seconds..."
          
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessage
+         local MSG="$temp"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli
+
+         local MSG="$temp $NOTIFY_MSG"
+         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagex
 
          ## Using wait, so we can still react on signal SIGTERM.
          ## "|| true", so the sleep process can be killed for debugging.
@@ -60,7 +64,7 @@ check_autostart() {
          #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
          
          EXIT_CODE="0"
-         cleanup
+         cleanup "1"
          return 0
       fi
 
@@ -68,7 +72,7 @@ check_autostart() {
       $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
       
       EXIT_CODE="0"
-      cleanup
+      cleanup "1"
       return 0
    fi
 }

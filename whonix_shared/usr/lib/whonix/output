@@ -5,7 +5,7 @@
 
 ## Auto started, there is no output channel available.
 ## Therefore store this output.
-
+# 
 ## If whonixcheck was run by cron, regular echos will not be shown,
 ## because whonixcheck was run automatically by cron and not manually from a terminal.
 ## Therefore we use "write".
@@ -17,7 +17,7 @@
 
 #whonix_shared/usr/lib/whonix/output --channel "both" --message "test message \\ \$ \(" --title "title goes here" --type --"warning"
 
-#whonix_shared/usr/lib/whonix/output --channel "both" --type "--info" --title "test title" --message "wait a bit" --waitmessage
+#whonix_shared/usr/lib/whonix/output --channel "both" --type "--info" --title "test title" --message "wait a bit" --waitmessagecli
 
 #whonix_shared/usr/lib/whonix/output --showx
 
@@ -57,6 +57,12 @@ output_sighup() {
    trap "error_handler" ERR
 
    ## This function is called when the cancel button in zenity gets pressed.
+
+   if [ "$PARENT_PID" = "" ]; then
+      if [ -f "/var/run/whonix/whonixcheck/"$IDENTIFIER"_pid" ]; then
+         PARENT_PID="$(cat "/var/run/whonix/whonixcheck/"$IDENTIFIER"_pid")"
+      fi
+   fi   
 
    ## Check if still running.
    local ps_return="0"
@@ -127,10 +133,14 @@ parse_cmd_options() {
                TITLE="$2"
                shift 2
                ;;
-           --waitmessage)
-               WAIT_MESSAGE=1
+           --waitmessagecli)
+               WAIT_MESSAGE_CLI=1
                shift
                ;;
+           --waitmessagex)
+               WAIT_MESSAGE_X=1
+               shift
+               ;;               
            --instantecho)
                INSTANT_ECHO="1"
                shift
@@ -222,6 +232,9 @@ start_progress_bar() {
    exec 3>"$FIFO"
 
    echo "$ZENITY_PROGRESS_PID" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
+   
+   ## Waiting for SIGHUP.
+   wait   
 }
 
 output_write_to_tty() {
@@ -239,7 +252,7 @@ output_write_to_tty() {
    done
    touch "/var/lib/whonix/whonixcheck/write_lock"
    echo "${1+"$@"}" | write user tty1 2>/dev/null || true
-   sleep "3" && rm --force "/var/lib/whonix/whonixcheck/write_lock" &
+   sleep "6" && rm --force "/var/lib/whonix/whonixcheck/write_lock" &
 }
 
 progress_bar() {
@@ -349,13 +362,18 @@ output() {
       rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
    fi
 
-   if [ "$WAIT_MESSAGE" = "1" ]; then
+   local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli"
+   local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x"
+
+   if [ "$WAIT_MESSAGE_CLI" = "1" ]; then
       local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli"
-      local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x"
-   else
-      local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli"
-      local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x"
+      local file_x="/dev/null"
    fi
+
+   if [ "$WAIT_MESSAGE_X" = "1" ]; then
+      local file_cli="/dev/null"
+      local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_x"
+   fi   
 
    if [ "$CHANNEL" = "debug" ]; then
       if [ "$VERBOSE" = "1" ]; then
@@ -414,6 +432,7 @@ show_output() {
 
    if [ -f "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done" ] || [ -f "/var/run/whonix/whonixcheck/"$IDENTIFIER"_recently_run" ]; then
       ## Done.
+      
       MESSAGE_CLI="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli)"
       MESSAGE_X="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x)"
       LOOP="0"
@@ -431,17 +450,27 @@ show_output() {
          if [ "$AUTOSTART" = "1" ]; then
             if [ "$STARTED_AUTOSTART_PROGRESS_BAR" = "1" ]; then
                true
+
+               sleep "3" &
+               wait "$!" || true
+               show_output
+               
             else
                STARTED_AUTOSTART_PROGRESS_BAR="1"
 
-               ## For start_progress_bar.
                MESSAGE="$MESSAGE_X"
                
-               ## For start_progress_bar.
                TITLE="$IDENTIFIER"
                
-               start_progress_bar
-               progress_bar "5"
+               $0 --identifier "$IDENTIFIER" --progressbar --title "$TITLE" --message "$MESSAGE" &
+               
+               sleep "3" &
+               wait "$!" || true
+         
+               $0 --identifier "$IDENTIFIER" --progress "5"
+
+               show_output
+               return 0
             fi
          fi
          
@@ -566,13 +595,7 @@ parse_cmd_options ${1+"$@"}
 fallbacks
 
 if [ "$PROGRESSBAR" = "1" ]; then
-   if [ "$PARENT_PID" = "" ]; then
-      echo "$SCRIPTNAME ERROR: --parentpid required!" >&2
-      exit 1
-   fi
    start_progress_bar
-   ## Waiting for SIGHUP.
-   wait
    exit 0
 fi
 

@@ -3,6 +3,13 @@
 welcome() {
    trap "error_handler" ERR
 
+   TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)"
+
+   local MSG="$NOTIFY_MSG"   
+
+   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli
+   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagex   
+
    ## No progress bar if automatically started,
    ## dispatching the progress bar in that case is the task
    ## of --showx.
@@ -16,8 +23,6 @@ welcome() {
          return 0
       fi
    fi
-   
-   TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)"
 
    $output ${output_opts[@]} --progressbar --title "$TITLE" --message "$NOTIFY_MSG" --parentpid "$$" &
 }

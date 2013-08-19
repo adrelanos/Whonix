@@ -43,7 +43,7 @@ Please close this window and enable Tor!
     or in Terminal: sudo whonixsetup"
       $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
       EXIT_CODE="1"
-      cleanup
+      cleanup "1"
       return
    else
       local MSG='Tor Check Result: "DisableNetwork 1" in /etc/tor/torrc commented out, ok.'

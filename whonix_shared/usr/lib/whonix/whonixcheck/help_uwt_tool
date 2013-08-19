@@ -20,7 +20,7 @@ uwt_tool() {
          local MSG="uwt_tool: Can not find curl. Please report this bug!"
          $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
          EXIT_CODE="1"
-         cleanup
+         cleanup "1"
          return 0
       fi
    fi 
