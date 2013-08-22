@@ -7,8 +7,8 @@ welcome() {
 
    local MSG="$NOTIFY_MSG"   
 
-   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli
-   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagex   
+   $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli
+   $output ${output_opts[@]} --channel "x" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagex
 
    ## No progress bar if automatically started,
    ## dispatching the progress bar in that case is the task

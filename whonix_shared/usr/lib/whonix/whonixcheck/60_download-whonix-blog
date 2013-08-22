@@ -61,7 +61,9 @@ download_blog() {
       --location \
       --output "$FEED_FILE" \
       "$BLOG_URL" \
-      || { DOWNLOAD_BLOG_RETURN="$?" ; true; };
+      &
+
+   wait "$!" || { DOWNLOAD_BLOG_RETURN="$?" ; true; };
       
    if [ "$DOWNLOAD_BLOG_RETURN" = "0" ]; then
       return 0
@@ -94,7 +96,9 @@ parse_blog() {
          $RAWDOG_VERBOSE \
          --update \
          --write \
-         || { local RAWDOG_RETURN="$?" ; true; };
+         &
+
+    wait "$!" || { local RAWDOG_RETURN="$?" ; true; };
 
    if [ "$RAWDOG_RETURN" = "0" ]; then
       BLOG_SUCCESS="$(expr "$BLOG_SUCCESS" + 1)"      
@@ -112,7 +116,9 @@ parse_blog() {
          --write=plain \
          --output=/var/lib/whonix/whonixcheck/"$BLOG_TXT_FILE" \
          /var/lib/whonix/whonixcheck/"$BLOG_HTML_FILE" \
-         || { local PANDOC_RETURN="$?" ; true; };
+         &
+
+   wait "$!" || { local PANDOC_RETURN="$?" ; true; };
       
    if [ "$PANDOC_RETURN" = "0" ]; then
       true

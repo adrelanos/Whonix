@@ -37,7 +37,13 @@ $SCRIPTNAME [-aDdlpqTux] [long options...]
         -n --noconfig                         ignore /etc/sdwdate.d/ config folder
         -w --dispatchpre                      exec before run
         -x --dispatchpostsuccess              exec after successful run
-        -z --dispatchpostfailure              exec after unsuccessful run"
+        -z --dispatchpostfailure              exec after unsuccessful run
+        --dispatch_pre_pal                    exec before run of curl
+        --dispatch_post_pal                   exec after run of curl
+        --dispatch_pre_neutral                exec before run of curl
+        --dispatch_post_neutral               exec after run of curl
+        --dispatch_pre_foe                    exec before first run of curl
+        --dispatch_post_foe                   exec after run of curl"
 
 #       -u --user                             userid to run as
 }
@@ -119,6 +125,36 @@ sdwdate_defaults() {
       #HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0"
    fi
 
+   if [ ${SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_PRE
+      SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]="true"
+   fi
+
+   if [ ${SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_POST
+      SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]="true"
+   fi
+   
+   if [ ${SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_PRE 
+      SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]="true"
+   fi
+   
+   if [ ${SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_POST
+      SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]="true"
+   fi
+   
+   if [ ${SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_PRE
+      SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]="true"
+   fi
+
+   if [ ${SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]} = "" ]; then
+      declare -A -g SDWDATE_CURL_DISPATCH_POST
+      SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]="true"
+   fi
+
    if [ "$SDWDATE_POOL_PAL" = "" ]; then
       declare -g SDWDATE_POOL_PAL
       
@@ -183,6 +219,9 @@ sdwdate_defaults() {
 
 sdwdate_read_config_folder() {
    trap "sdwdate_error_handler" ERR
+
+   declare -A -g SDWDATE_CURL_DISPATCH_PRE
+   declare -A -g SDWDATE_CURL_DISPATCH_POST
 
    if [ "$NOCONFIG" = "1" ]; then
       return 0
@@ -290,7 +329,31 @@ sdwdate_parse_cmd_options() {
            -z | --dispatchpostfailure)
                DISPATCH_POST_FAILURE=$2
                shift 2
-               ;;              
+               ;;
+           --dispatch_pre_pal)
+               SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]=$2
+               shift 2
+               ;;
+           --dispatch_post_pal)
+               SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]=$2
+               shift 2
+               ;;
+           --dispatch_pre_neutral)
+               SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]=$2
+               shift 2
+               ;;
+           --dispatch_post_neutral)
+               SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]=$2
+               shift 2
+               ;;
+           --dispatch_pre_foe)
+               SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]=$2
+               shift 2
+               ;;
+           --dispatch_post_foe)
+               SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]=$2
+               shift 2
+               ;;        
            -q | --quiet)
                QUIET=1
                shift
@@ -409,6 +472,12 @@ sdwdate_download() {
    SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]="0"
    
    local TIME_START="$(date +%s)"
+
+   if [ "${SDWDATE_CURL_DISPATCH_PRE[$SDWDATE_CURRENT_POOL]}" = "" ]; then
+      true
+   else
+      eval ${SDWDATE_CURL_DISPATCH_PRE[$SDWDATE_CURRENT_POOL]}
+   fi
    
    ## --fail not required, because also 404 would include head, which is all we need
    $CURL \
@@ -428,9 +497,15 @@ sdwdate_download() {
    SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]="0"
    wait "${SDWDATE_CURL_PID[$SDWDATE_CURRENT_POOL]}" || { SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]="$?" ; true; };
  
-   true "INFO: SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]: ${SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]}"
+   true "INFO: SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]: ${SDWDATE_CURL_RETURN[$SDWDATE_CURRENT_POOL]}"   
    
-   local TIME_END="$(date +%s)"   
+   local TIME_END="$(date +%s)"
+
+   if [ "${SDWDATE_CURL_DISPATCH_POST[$SDWDATE_CURRENT_POOL]}" = "" ]; then
+      true
+   else
+      eval ${SDWDATE_CURL_DISPATCH_POST[$SDWDATE_CURRENT_POOL]}
+   fi
    
    SDWDATE_DOWNLOAD_TOOK_TIME[$SDWDATE_CURRENT_POOL]="$(expr "$TIME_END" - "$TIME_START")" || true
    

@@ -46,8 +46,15 @@ preparation() {
    fi
    
    rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_done"
+   rm --force "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
    touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_running"
    echo "$BASHPID" > /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+
+   chmod g+w "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_running"
+   chmod o+w "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_running"
+
+   chmod g+w /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
+   chmod o+w /var/run/whonix/whonixcheck/""$SCRIPTNAME"_pid"
    
    sync
 

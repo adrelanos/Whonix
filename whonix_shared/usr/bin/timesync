@@ -16,7 +16,6 @@ source /usr/lib/whonix/whonixcheck/help_error-handler
 source /usr/lib/whonix/whonixcheck/help_cli
 source /usr/lib/whonix/whonixcheck/help_parse-cmd-options
 source /usr/lib/whonix/whonixcheck/10_preparation
-source /usr/lib/whonix/whonixcheck/16_delete_old_files
 source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
 source /usr/lib/whonix/whonixcheck/30_welcome
 source /usr/lib/whonix/whonixcheck/35_disclaimer

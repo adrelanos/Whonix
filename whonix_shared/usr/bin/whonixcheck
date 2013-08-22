@@ -19,7 +19,6 @@ source /usr/lib/whonix/whonixcheck/10_preparation
 source /usr/lib/whonix/whonixcheck/help_uwt_tool
 source /usr/lib/whonix/whonixcheck/help_cli
 source /usr/lib/whonix/whonixcheck/help_parse-cmd-options
-source /usr/lib/whonix/whonixcheck/16_delete_old_files
 source /usr/lib/whonix/whonixcheck/17_check_tor_enabled
 source /usr/lib/whonix/whonixcheck/20_check-lastrun
 source /usr/lib/whonix/whonixcheck/25_autostart
@@ -55,10 +54,8 @@ whonixcheck_main() {
    else
       $FUNCTION
       return 0
-   fi 
- 
-   delete_old_files ## 16_delete_old_files
-   
+   fi
+  
    ## no connection (runs only on Whonix-Gateway)
    check_tor_enabled ## 17_check_tor_enabled      
    

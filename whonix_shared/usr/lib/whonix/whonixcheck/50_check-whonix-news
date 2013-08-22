@@ -38,7 +38,9 @@ download_whonix_news() {
          --max-time 180 \
          --output ""$VERIFY_TEMPDIR"/news/"$FILENAME"" \
          "$LINK" \
-         || { DOWNLOAD_NEWS_RETURN[$LINK]="$?" ; true; };
+         &
+
+      wait "$!" || { DOWNLOAD_NEWS_RETURN[$LINK]="$?" ; true; };
 
       if [ ! "${DOWNLOAD_NEWS_RETURN[$LINK]}" = "0" ]; then
          local MSG="Whonix News Result: Could not download Whonix News File "$FILENAME". (curl return code: "${DOWNLOAD_NEWS_RETURN[$LINK]}")"

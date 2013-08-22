@@ -1,8 +1,0 @@
-#!/bin/bash
-
-delete_old_files() { 
-   rm -f "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
-   
-   sync
-}
-

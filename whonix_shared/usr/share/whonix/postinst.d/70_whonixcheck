@@ -4,16 +4,16 @@ source /usr/share/whonix/postinst.d/pre.bsh
 
 mkdir -p /var/lib/whonix/whonixcheck/
 
-chmod g+w /var/lib/whonix/whonixcheck/
-chmod o+w /var/lib/whonix/whonixcheck/
+chmod --recursive g+w /var/lib/whonix/whonixcheck/
+chmod --recursive o+w /var/lib/whonix/whonixcheck/
 
 mkdir -p /var/run/whonix/whonixcheck/
 
-chmod g+w /var/run/whonix/whonixcheck/
-chmod o+w /var/run/whonix/whonixcheck/
+chmod --recursive g+w /var/run/whonix/whonixcheck/
+chmod --recursive o+w /var/run/whonix/whonixcheck/
 
 mkdir -p /home/rawdog/.rawdog/
 
-chmod g+w /home/rawdog/.rawdog/
-chmod o+w /home/rawdog/.rawdog/
+chmod --recursive g+w /home/rawdog/.rawdog/
+chmod --recursive o+w /home/rawdog/.rawdog/
 

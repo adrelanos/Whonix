@@ -498,7 +498,7 @@ It is a good idea to delete old TBB backups once in a while if you are running l
 
    rm --recursive --force ~/.tb/gpgtmpdir/
    mkdir --parents ~/.tb/gpgtmpdir/
-   chmod 700 ~/.tb/gpgtmpdir/
+   chmod --recursive 700 ~/.tb/gpgtmpdir/
 
    gpg --homedir ~/.tb/gpgtmpdir/ --import /usr/share/whonix/keys/tbb-keys.d/*
 

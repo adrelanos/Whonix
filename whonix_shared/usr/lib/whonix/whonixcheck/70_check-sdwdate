@@ -55,7 +55,8 @@ Last resort: manually set the clock! (In UTC!):
    fi
 
    let "PROGRESS=$PROGRESS+1" || true
-   $output ${output_opts[@]} --progress "$PROGRESS"
+   ## sdwdate not reports status itself.
+   ## old: $output ${output_opts[@]} --progress "$PROGRESS"
 
    TIME_END="$(date +%s)"
    TIME_DIFF="$(expr "$TIME_END" - "$TIME_START")" || true
@@ -136,7 +137,7 @@ $HELPTEXT"
 
    if [ "$WAIT_RESULT" -gt "0" ]; then
       #echo "check_sdwdate debug info: Not done. Waiting up to $WAIT_RESULT more seconds."
-      sleep "7"
+      sleep "7" &
       wait "$!" || true
       check_sdwdate
       return 0

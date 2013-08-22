@@ -29,15 +29,15 @@ LOG=/var/log/$NAME.log
 # Create status directory
 if [ ! -d ${DIR} ]; then
    mkdir ${DIR}
-   chmod 0755 ${DIR}
-   chown root:root ${DIR}
+   chmod --recursive 0755 ${DIR}
+   chown --recursive root:root ${DIR}
 fi
 
 # Create log file
 if [ ! -e $LOG ]; then
    touch $LOG
-   chmod 0655 $LOG
-   chown root:root $LOG
+   chmod --recursive 0655 $LOG
+   chown --recursive root:root $LOG
 fi
 
 # Source configuration

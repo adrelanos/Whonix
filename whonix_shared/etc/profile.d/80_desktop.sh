@@ -94,9 +94,9 @@ Not starting kdm, already running."
       whoami: $(/usr/bin/whoami) | caller: $0 | path: $PATH"
       true "$temp"
       echo "$temp" >> ~/whonixdesktop
-      chown user:user ~/whonixdesktop
-      chmod g+w ~/whonixdesktop
-      chmod o+w ~/whonixdesktop
+      chown --recursive user:user ~/whonixdesktop
+      chmod --recursive g+w ~/whonixdesktop
+      chmod --recursive o+w ~/whonixdesktop
    fi
 
    ## Check how much RAM the system has in total.

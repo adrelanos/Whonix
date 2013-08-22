@@ -214,6 +214,8 @@ start_progress_bar() {
    rm --force "$FIFO"
    
    mkfifo "$FIFO"
+   chmod g+w "$FIFO"
+   chmod o+w "$FIFO"
 
    zenity \
       --display="$display" \
@@ -232,6 +234,8 @@ start_progress_bar() {
    exec 3>"$FIFO"
 
    echo "$ZENITY_PROGRESS_PID" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
+   chmod g+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
+   chmod o+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
    
    ## Waiting for SIGHUP.
    wait   
@@ -251,6 +255,8 @@ output_write_to_tty() {
       continue
    done
    touch "/var/lib/whonix/whonixcheck/write_lock"
+   chmod g+w "/var/lib/whonix/whonixcheck/write_lock"
+   chmod o+w "/var/lib/whonix/whonixcheck/write_lock"
    echo "${1+"$@"}" | write user tty1 2>/dev/null || true
    sleep "6" && rm --force "/var/lib/whonix/whonixcheck/write_lock" &
 }
@@ -356,14 +362,27 @@ output() {
       echo "$TYPE" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
    fi
 
+   chmod o+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+   chmod g+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+
    if [ "$PASSIVE" = "1" ]; then
       touch "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
+      chmod o+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
+      chmod g+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
    else
       rm --force "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_passive"
    fi
 
    local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli"
    local file_x="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x"
+
+   touch "$file_cli"
+   chmod g+w "$file_cli"
+   chmod o+w "$file_cli"
+
+   touch "$file_x"
+   chmod g+w "$file_x"
+   chmod o+w "$file_x"   
 
    if [ "$WAIT_MESSAGE_CLI" = "1" ]; then
       local file_cli="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_waiting_cli"
@@ -397,8 +416,15 @@ output() {
          echo "$MESSAGE" >> "$file_cli"     
       else
          echo "
-$MESSAGE" >> "$file_cli"         
+$MESSAGE" >> "$file_cli"
       fi
+   elif [ "$CHANNEL" = "x" ]; then
+      if [ "$NONEWLINEX" = "1" ]; then
+         echo "$MESSAGE" >> "$file_x"
+      else
+         echo "
+$MESSAGE" >> "$file_x"
+      fi  
    elif [ "$CHANNEL" = "both" ]; then
       if [ "$INSTANT_ECHO" = "1" ]; then
          echo "$MESSAGE"
@@ -432,6 +458,11 @@ show_output() {
 
    if [ -f "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done" ] || [ -f "/var/run/whonix/whonixcheck/"$IDENTIFIER"_recently_run" ]; then
       ## Done.
+
+      if [ ! -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli" ]; then
+         true "Done or recently_run, but /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli does not exist. Probably already received --forgot command."
+         return 0
+      fi
       
       MESSAGE_CLI="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_cli)"
       MESSAGE_X="$(cat /var/lib/whonix/whonixcheck/"$IDENTIFIER"_message_x)"

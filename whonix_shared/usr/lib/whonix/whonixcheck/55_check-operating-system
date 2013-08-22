@@ -9,7 +9,8 @@ check_operating_system() {
    local MSG="Debian Package Update Check: Checking for software updates via apt-get..."
    $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
    APT_GET_RETURN="0"
-   sudo /usr/lib/whonix/whonixcheck/apt-get-update >/dev/null || { APT_GET_RETURN="$?" ; true; };
+   sudo /usr/lib/whonix/whonixcheck/apt-get-update >/dev/null &
+   wait "$!" || { APT_GET_RETURN="$?" ; true; };
 
    if [ ! "$APT_GET_RETURN" = "0" ]; then
       local MSG="Debian Package Update Check Result:

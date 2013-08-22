@@ -8,7 +8,7 @@ if [ -e /home/user/.gnupg/gpg.conf ]; then
 fi
 
 sudo -u user mkdir /home/user/.gnupg
-sudo -u user chmod 700 /home/user/.gnupg
+sudo -u user chmod --recursive 700 /home/user/.gnupg
 
 sudo -u user cp /usr/share/whonix/home/.gnupg/gpg.conf /home/user/.gnupg/gpg.conf
 

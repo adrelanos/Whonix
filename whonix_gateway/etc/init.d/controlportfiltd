@@ -24,10 +24,10 @@ PIDFILE=/var/run/$NAME/pid
 SCRIPTNAME=/etc/init.d/$NAME
 
 mkdir --parents /var/run/controlportfilt
-chown debian-tor:debian-tor /var/run/controlportfilt
+chown --recursive debian-tor:debian-tor /var/run/controlportfilt
 
 touch /var/log/controlportfilt
-chown debian-tor:debian-tor /var/log/controlportfilt
+chown --recursive debian-tor:debian-tor /var/log/controlportfilt
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

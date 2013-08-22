@@ -35,25 +35,21 @@ DISPATCH_POST_SUCCESS="/usr/lib/whonix/sdw_post_success & disown"
 
 DISPATCH_POST_FAILURE="/usr/lib/whonix/sdw_post_failure & disown"
 
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 15"
+
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 30"
+
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 45"
+
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 60"
+
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 65"
+
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 80"
+
 #HTTP_USER_AGENT=""
 #HTTP_USER_AGENT="$(/usr/bin/getTorbuttonUserAgent)"
 #HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 6.1; rv:10.0) Gecko/20100101 Firefox/10.0"
-
-SDWDATE_POOL_PAL=(
-   boum.org
-   chavez.indymedia.org
-   db.debian.org
-   epic.org
-   mail.riseup.net
-   sarava.org
-   squat.net
-   tachanka.org
-   www.1984.is
-   www.eff.org
-   www.immerda.ch
-   www.privacyinternational.org
-   www.torproject.org
-)
 
 SDWDATE_POOL_PAL=(
    boum.org

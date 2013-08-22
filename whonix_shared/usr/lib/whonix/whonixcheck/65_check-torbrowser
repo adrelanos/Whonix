@@ -30,7 +30,9 @@ check_torbrowser() {
       --max-time 180 \
       --output "$RecommendedTBBVersions" \
       https://check.torproject.org/RecommendedTBBVersions \
-      || { CHECK_TORBROWSER_RESULT="$?" ; true; }
+      &
+
+   wait "$!" || { CHECK_TORBROWSER_RESULT="$?" ; true; }
 
    if [ ! "$CHECK_TORBROWSER_RESULT" = "0" ]; then
       local MSG="Tor Browser Update Check Result:

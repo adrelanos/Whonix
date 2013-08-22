@@ -37,14 +37,14 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/lsb/init-functions
 
 mkdir -p /var/run/whonix/whonixcheck/
-chown user:user /var/run/whonix/whonixcheck/
-chmod o+w /var/run/whonix/whonixcheck/
-chmod g+w /var/run/whonix/whonixcheck/
+chown --recursive user:user /var/run/whonix/whonixcheck/
+chmod --recursive o+w /var/run/whonix/whonixcheck/
+chmod --recursive g+w /var/run/whonix/whonixcheck/
 
 mkdir -p /var/lib/whonix/whonixcheck/
-chown user:user /var/lib/whonix/whonixcheck/
-chmod o+w /var/run/whonix/whonixcheck/
-chmod g+w /var/run/whonix/whonixcheck/
+chown --recursive user:user /var/lib/whonix/whonixcheck/
+chmod --recursive o+w /var/run/whonix/whonixcheck/
+chmod --recursive g+w /var/run/whonix/whonixcheck/
 
 #
 # Function that starts the daemon/service

@@ -7,7 +7,7 @@ check_tor_socks_or_trans_port() {
    #CURL=echo
    #VERIFY_TEMPDIR=/home/user   
    
-   local LINK="https://check.torproject.org" 
+   local LINK="https://check.torproject.org"
      
    if [ "$1" = "SocksPort" ]; then
       if [ "$WHONIXCHECK_DISABLE_SOCKS_PORT_TEST" = "1" ]; then
@@ -36,7 +36,9 @@ check_tor_socks_or_trans_port() {
          --max-time 180 \
          --output ""$VERIFY_TEMPDIR"/"$CHECK_TOR_OUT_FILE"" \
          "$LINK" \
-         || { CHECK_TOR_RESULT_SOCKS_PORT="$?" ; true; };
+         &
+
+      wait "$!" || { CHECK_TOR_RESULT_SOCKS_PORT="$?" ; true; };
 
       if [ ! "$CHECK_TOR_RESULT_SOCKS_PORT" = "0" ]; then
          if [ "$VM" = "Whonix-Gateway" ]; then
@@ -103,8 +105,9 @@ Not checking Tor's TransPort, because SocksPort test failed already."
          --proto =https \
          --max-time 180 \
          --output ""$VERIFY_TEMPDIR"/"$CHECK_TOR_OUT_FILE"" \
-         "$LINK" \
-         || { CHECK_TOR_RESULT_TRANS_PORT="$?" ; true; };
+         "$LINK" &
+
+      wait "$!" || { CHECK_TOR_RESULT_TRANS_PORT="$?" ; true; };
      
       if [ ! "$CHECK_TOR_RESULT_TRANS_PORT" = "0" ]; then
          local MSG="\
