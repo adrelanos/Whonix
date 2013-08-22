@@ -55,7 +55,7 @@ check_autostart() {
          $output ${output_opts[@]} --forgetwait
       fi
    else
-      touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run"
    
       ## If it was run by cron and there is nothing to tell, say nothing,
       ## only send a debug message, if debugging is enabled.

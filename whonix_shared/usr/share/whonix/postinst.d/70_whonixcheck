@@ -2,18 +2,8 @@
 
 source /usr/share/whonix/postinst.d/pre.bsh
 
-mkdir -p /var/lib/whonix/whonixcheck/
+sudo -u user mkdir --parents /var/lib/whonix/whonixcheck/
 
-chmod --recursive g+w /var/lib/whonix/whonixcheck/
-chmod --recursive o+w /var/lib/whonix/whonixcheck/
+sudo -u user mkdir --parents /var/run/whonix/whonixcheck/
 
-mkdir -p /var/run/whonix/whonixcheck/
-
-chmod --recursive g+w /var/run/whonix/whonixcheck/
-chmod --recursive o+w /var/run/whonix/whonixcheck/
-
-mkdir -p /home/rawdog/.rawdog/
-
-chmod --recursive g+w /home/rawdog/.rawdog/
-chmod --recursive o+w /home/rawdog/.rawdog/
-
+sudo -u rawdog mkdir --parents /home/rawdog/.rawdog/

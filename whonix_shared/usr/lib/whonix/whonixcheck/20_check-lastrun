@@ -44,6 +44,6 @@ whonixcheck_completed() {
    trap "error_handler" ERR
 
    local LASTRUN="$(date +%s)"
-   echo "$LASTRUN" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_lastrun"
+   echo "$LASTRUN" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_lastrun" > /dev/null
 }
 

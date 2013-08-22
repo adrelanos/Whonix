@@ -37,9 +37,7 @@ cleanup() {
    rm --force "/var/run/whonix/whonixcheck/"$IDENTIFIER"_waiting"
    rm --force "/var/run/whonix/whonixcheck/"$IDENTIFIER"_pid"
    
-   touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-   chmod g+w "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-   chmod o+w "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+   sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
   
    sync
    

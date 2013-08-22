@@ -249,9 +249,7 @@ start_progress_bar() {
    ## Clean up eventual old progress bar.
    rm --force "$FIFO"
    
-   mkfifo "$FIFO"
-   chmod g+w "$FIFO"
-   chmod o+w "$FIFO"
+   sudo -u user mkfifo "$FIFO"
 
    zenity \
       --display="$display" \
@@ -267,13 +265,12 @@ start_progress_bar() {
 
    ## "2>/dev/null" is required to hide the output "Killed zenity --display..."
    ## later when it gets killed by the progress_bar function.
-   exec 3>"$FIFO"
+   sudo -u user exec 3>"$FIFO"
 
-   echo "$ZENITY_PROGRESS_PID" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
-   chmod g+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
-   chmod o+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid"
+   echo "$ZENITY_PROGRESS_PID" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid" > /dev/null
    
    ## Waiting for SIGHUP.
+   ## Happens when zentiy reached 100% or when cancel button is pressed.
    wait   
 }
 
@@ -321,7 +318,7 @@ progress_bar() {
 
       ## For extra security against freezing while trying to write to a non-existing pipe, lets use timeout.
       ## || true to catch an error if the pipe no longer exists.
-      timeout 1 /bin/bash -c "echo "$1" > "$FIFO"" || true
+      timeout 1 /bin/bash -c "echo "$1" | sudo -u user tee "$FIFO" > /dev/null" || true
    fi
 }
 
@@ -367,7 +364,7 @@ fallbacks() {
 output() {
    trap "error_handler" ERR
 
-   echo "$TITLE" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title"
+   echo "$TITLE" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title" > /dev/null
 
    if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" ]; then
       OLD_TYPE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type")"
@@ -386,20 +383,20 @@ output() {
    if [ "$OLD_TYPE" = "--info" ]; then
       if [ "$TYPE" = "--error" ]; then
          ## Upgrade from --info to --error.
-         echo "--error" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+         echo "--error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
       elif [ "$TYPE" = "--warning" ]; then
          ## Upgrade from --info to --warning.
-         echo "--warning" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+         echo "--warning" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
       fi
    elif [ "$OLD_TYPE" = "--warning" ]; then
       if [ "$TYPE" = "--error" ]; then
          ## Upgrade from --warning to --error.
-         echo "--error" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+         echo "--error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
       fi
    elif [ "$OLD_TYPE" = "--error" ]; then
       true
    else
-      echo "$TYPE" > "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
+      echo "$TYPE" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
    fi
 
    chmod o+w "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type"
@@ -453,17 +450,17 @@ output() {
          output_write_to_tty "$MESSAGE"
       fi
       if [ "$NONEWLINECLI" = "1" ]; then
-         echo "$MESSAGE" >> "$file_cli"     
+         echo "$MESSAGE" | sudo -u user tee --append "$file_cli" > /dev/null
       else
          echo "
-$MESSAGE" >> "$file_cli"
+$MESSAGE" | sudo -u user tee --append "$file_cli" > /dev/null
       fi
    elif [ "$CHANNEL" = "x" ]; then
       if [ "$NONEWLINEX" = "1" ]; then
-         echo "$MESSAGE" >> "$file_x"
+         echo "$MESSAGE" | sudo -u user tee --append "$file_x" > /dev/null
       else
          echo "
-$MESSAGE" >> "$file_x"
+$MESSAGE" | sudo -u user tee --append "$file_x" > /dev/null
       fi  
    elif [ "$CHANNEL" = "both" ]; then
       if [ "$INSTANT_ECHO" = "1" ]; then
@@ -473,16 +470,16 @@ $MESSAGE" >> "$file_x"
          output_write_to_tty "$MESSAGE"
       fi
       if [ "$NONEWLINECLI" = "1" ]; then
-         echo "$MESSAGE" >> "$file_cli"
+         echo "$MESSAGE" | sudo -u user tee --append "$file_cli" > /dev/null
       else
          echo "
-$MESSAGE" >> "$file_cli"
+$MESSAGE" | sudo -u user tee --append "$file_cli" > /dev/null
       fi
       if [ "$NONEWLINEX" = "1" ]; then
-         echo "$MESSAGE" >> "$file_x"
+         echo "$MESSAGE" | sudo -u user tee --append "$file_x" > /dev/null
       else
          echo "
-$MESSAGE" >> "$file_x"         
+$MESSAGE" | sudo -u user tee --append "$file_x" > /dev/null
       fi
    else
       error "$SCRIPTNAME output unknown OUTPUT_CHANNEL: $CHANNEL"
