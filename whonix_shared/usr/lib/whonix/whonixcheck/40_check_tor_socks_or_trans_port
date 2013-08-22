@@ -12,12 +12,12 @@ check_tor_socks_or_trans_port() {
    if [ "$1" = "SocksPort" ]; then
       if [ "$WHONIXCHECK_DISABLE_SOCKS_PORT_TEST" = "1" ]; then
          local MSG="SocksPort Test: Not testing Tor's SocksPort, because you set WHONIXCHECK_DISABLE_SOCKS_PORT_TEST=\"1\" to deactivate this."
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
          return 0
       fi
 
       local MSG="SocksPort Test: Testing Tor's SocksPort..."
-      $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "echo" --type "info" --title "$TITLE" --message "$MSG"
 
       local SOCKS_PORT_WHONIXCHECK="9110"
      
@@ -63,14 +63,14 @@ You could check, if you can reach https://check.torproject.org via the Tor Brows
             
          fi
 
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
 
          return 0
       fi
    elif [ "$1" = "TransPort" ]; then
       if [ "$WHONIXCHECK_DISABLE_TRANS_PORT_TEST" = "1" ]; then
          local MSG="TransPort Test: Not testing Tor's TransPort, because you set WHONIXCHECK_DISABLE_TRANS_PORT_TEST=\"1\" to deactivate this."
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
          return 0      
       fi
       
@@ -78,7 +78,7 @@ You could check, if you can reach https://check.torproject.org via the Tor Brows
       ## This variable may be set to 1, during the first run of this function.
       if [ "$NOT_USING_TOR" = "1" ]; then
          local MSG="TransPort Test: Not testing Tor's TransPort, because Tor could not be detected on Tor's SocksPort."
-         $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "echo" --type "info" --title "$TITLE" --message "$MSG"
          return 0
       fi
       
@@ -86,12 +86,12 @@ You could check, if you can reach https://check.torproject.org via the Tor Brows
          local MSG="\
 TransPort Test:
 Not checking Tor's TransPort, because SocksPort test failed already."
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
          return 0
       fi      
    
       local MSG="TransPort Test: Testing Tor's TransPort..."
-      $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "echo" --type "info" --title "$TITLE" --message "$MSG"
    
       CHECK_TOR_RESULT_TRANS_PORT="0"
 
@@ -118,12 +118,12 @@ Tor's TransPort was not reachable.
 (
  If you disabled Tor's TransPort, please disable this check, see whonixcheck /etc/whonix.d/30_whonixcheck_default configuration file.
 )"
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
          return 0
       fi
    else
      local MSG="Trans/Socks-Port Test Error: \$1 is neither TransPort nor SocksPort. Please report this BUG!"
-     $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+     $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
      return 0
    fi
 
@@ -158,7 +158,7 @@ Tor's TransPort was not reachable.
       elif [ "$1" = "SocksPort" ]; then
          local MSG="SocksPort Test Result: Connected to Tor. IP: $IP"
       fi      
-      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
       return 0
    else
       NOT_USING_TOR="1"
@@ -169,7 +169,7 @@ Tor's TransPort was not reachable.
 TransPort Test Result:
 Tor not detected, but you set WHONIXCHECK_NO_EXIT_ON_TRANS_PORT_DETECTION_FAILURE="1" to ignore this.
 IP: $IP"
-            $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+            $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
             return 0
          else
             local MSG="\
@@ -193,7 +193,7 @@ Possible reasons:
 You could try to find out if this IP is/was a Tor exit node using a search engine or ExoneraTor:
 https://metrics.torproject.org/exonerator.html"
 
-            $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+            $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
             EXIT_CODE="1"
             cleanup "1"
             return 0
@@ -212,7 +212,7 @@ Possible reasons:
 
 You could try to find out if this IP is/was a Tor exit node using a search engine or ExoneraTor:
 https://metrics.torproject.org/exonerator.html"
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
          EXIT_CODE="1"
          cleanup "1"
          return 0

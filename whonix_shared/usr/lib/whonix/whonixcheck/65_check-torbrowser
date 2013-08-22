@@ -14,7 +14,7 @@ check_torbrowser() {
 
    CHECK_TORBROWSER_RESULT="0"
    local MSG="Tor Browser Update Check: Checking version..."
-   $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG"
+   $output ${output_opts[@]} --channel "echo" --type "info" --title "$TITLE" --message "$MSG"
 
    local SOCKS_PORT_WHONIXCHECK="9110"
 
@@ -38,7 +38,7 @@ check_torbrowser() {
       local MSG="Tor Browser Update Check Result:
 Tor Browser Update check failed. (curl return code: "$CHECK_TORBROWSER_RESULT") Could now download: https://check.torproject.org/RecommendedTBBVersions
 Try: Start menu -> Applications -> System -> Tor Browser Updater"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -57,7 +57,7 @@ Could not determine currently installed Tor Browser version. \
 This could be either because none is installed or because the version format changed.
 
 Try: Start menu -> Applications -> System -> Tor Browser Updater"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       return 0
    fi
 
@@ -65,13 +65,13 @@ Try: Start menu -> Applications -> System -> Tor Browser Updater"
    if [ "$TBBINSTALLEDVERSION" = "$TBBVERSION" ]; then
       ## It is up to date...
       local MSG="Tor Browser Update Check Result: Up to date."
-      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
    else
       ## Outdated...
       local MSG="Tor Browser Update Check Result:
 Installed Tor Browser version: $TBBINSTALLEDVERSION. Latest Tor Browser version: $TBBVERSION.
 Please run: Start menu -> Applications -> System -> Tor Browser Updater"
-      $output ${output_opts[@]} --channel "both" --type "--warning" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "warning" --title "$TITLE" --message "$MSG"
    fi
 }
 

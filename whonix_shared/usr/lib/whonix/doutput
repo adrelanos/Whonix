@@ -15,9 +15,9 @@
 
 #whonix_shared/usr/lib/whonix/output --forget
 
-#whonix_shared/usr/lib/whonix/output --channel "both" --message "test message \\ \$ \(" --title "title goes here" --type --"warning"
+#whonix_shared/usr/lib/whonix/output --channel "both" --message "test message \\ \$ \(" --title "title goes here" --type "warning"
 
-#whonix_shared/usr/lib/whonix/output --channel "both" --type "--info" --title "test title" --message "wait a bit" --waitmessagecli
+#whonix_shared/usr/lib/whonix/output --channel "both" --type "info" --title "test title" --message "wait a bit" --waitmessagecli
 
 #whonix_shared/usr/lib/whonix/output --showx
 
@@ -380,26 +380,26 @@ output() {
       error "ERROR: You forgot --type."
    fi
 
-   if [ "$TYPE" = "--info" ] || [ "$TYPE" = "--warning" ] || [ "$TYPE" = "--error" ]; then
+   if [ "$TYPE" = "info" ] || [ "$TYPE" = "warning" ] || [ "$TYPE" = "error" ]; then
       true
    else
-      error "ERROR: Invalid type. Must be --info, --warning or --error."
+      error "ERROR: Invalid type. Must be info, warning or error."
    fi
 
-   if [ "$OLD_TYPE" = "--info" ]; then
-      if [ "$TYPE" = "--error" ]; then
-         ## Upgrade from --info to --error.
-         echo "--error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
-      elif [ "$TYPE" = "--warning" ]; then
-         ## Upgrade from --info to --warning.
-         echo "--warning" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
+   if [ "$OLD_TYPE" = "info" ]; then
+      if [ "$TYPE" = "error" ]; then
+         ## Upgrade from info to error.
+         echo "error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
+      elif [ "$TYPE" = "warning" ]; then
+         ## Upgrade from info to warning.
+         echo "warning" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
       fi
-   elif [ "$OLD_TYPE" = "--warning" ]; then
-      if [ "$TYPE" = "--error" ]; then
-         ## Upgrade from --warning to --error.
-         echo "--error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
+   elif [ "$OLD_TYPE" = "warning" ]; then
+      if [ "$TYPE" = "error" ]; then
+         ## Upgrade from warning to error.
+         echo "error" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
       fi
-   elif [ "$OLD_TYPE" = "--error" ]; then
+   elif [ "$OLD_TYPE" = "error" ]; then
       true
    else
       echo "$TYPE" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_type" > /dev/null
@@ -569,15 +569,15 @@ show_output() {
    fi
 
    local temp="?"
-   if [ "$TYPE" = "--error" ]; then
+   if [ "$TYPE" = "error" ]; then
       local temp="ERROR"
       PASSIVE="0"
    fi
-   if [ "$TYPE" = "--warning" ]; then
+   if [ "$TYPE" = "warning" ]; then
       local temp="WARNING"
       PASSIVE="0"
    fi
-   if [ "$TYPE" = "--info" ]; then
+   if [ "$TYPE" = "info" ]; then
       local temp="Info"
    fi
 
@@ -624,7 +624,7 @@ $MESSAGE_CLI"
                --no-markup \
                --window-icon "$ICON" \
                --title="$TITLE" \
-               "$TYPE" \
+               "--"$TYPE"" \
                --text "
 $IDENTIFIER
 ----------------------------------------------------------------------

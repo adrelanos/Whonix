@@ -18,7 +18,7 @@ uwt_tool() {
          CURL=curl
       else
          local MSG="uwt_tool: Can not find curl. Please report this bug!"
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
          EXIT_CODE="1"
          cleanup "1"
          return 0
@@ -40,7 +40,7 @@ uwt_tool() {
          RAWDOG=rawdog
       else
          local MSG="uwt_tool: Can not find rawdog. Please report this bug!"
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       fi
    fi
 
@@ -59,7 +59,7 @@ uwt_tool() {
          APT_GET=apt-get
       else
          local MSG="uwt_tool: Can not find apt-get. Please report this bug!"
-         $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+         $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       fi
    fi     
 }

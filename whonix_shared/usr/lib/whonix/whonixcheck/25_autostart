@@ -42,10 +42,10 @@ check_autostart() {
          local temp="$SCRIPTNAME has not completed for more than one day. Running $SCRIPTNAME again in "$DELAY" seconds..."
          
          local MSG="$temp"
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli
+         $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG" --waitmessagecli
 
          local MSG="$temp $NOTIFY_MSG"
-         $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagex
+         $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG" --waitmessagex
 
          ## Using wait, so we can still react on signal SIGTERM.
          ## "|| true", so the sleep process can be killed for debugging.
@@ -61,7 +61,7 @@ check_autostart() {
       ## only send a debug message, if debugging is enabled.
       if [ "$RUN_BY_CRON" = "1" ]; then
          local MSG="$SCRIPTNAME started by cron. $SCRIPTNAME checks completed $DIFFERENCE seconds ago. No need to run again."       
-         #$output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
+         #$output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG" --passive
          
          EXIT_CODE="0"
          cleanup "1"
@@ -69,7 +69,7 @@ check_autostart() {
       fi
 
       local MSG="No need to run $SCRIPTNAME, was run less than one day ago. You could still start $SCRIPTNAME manually."
-      $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG" --passive
+      $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG" --passive
       
       EXIT_CODE="0"
       cleanup "1"

@@ -34,7 +34,7 @@ root_check() {
    else
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1
@@ -65,7 +65,7 @@ tb_error_handler() {
 "
    echo "$MSG"
    $output ${output_opts[@]} --progress "100" 
-   $output ${output_opts[@]} --channel "x" --type "--error" --title "$TITLE" --message "$MSG"
+   $output ${output_opts[@]} --channel "x" --type "error" --title "$TITLE" --message "$MSG"
    $output ${output_opts[@]} --showx
 
    exit 1
@@ -79,10 +79,10 @@ trap_sigterm() {
    MSG="$SCRIPTNAME: sigterm received. Exiting."
    $output ${output_opts[@]} --progress "100"
    sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-   $output ${output_opts[@]} --channel "echo" --type "--error" --title "$TITLE" --message "$MSG"
+   $output ${output_opts[@]} --channel "echo" --type "error" --title "$TITLE" --message "$MSG"
 
    #MSG="Aborted."
-   #$output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+   #$output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
    #$output ${output_opts[@]} --showx
    
    exit 1
@@ -404,7 +404,7 @@ $DOWNLOAD_FAIL_HELP"
 
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1
@@ -428,7 +428,7 @@ tb_download() {
 
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1
@@ -573,7 +573,7 @@ It is a good idea to delete old TBB backups once in a while if you are running l
 $DOWNLOAD_FAIL_HELP"
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1
@@ -606,7 +606,7 @@ $DOWNLOAD_FAIL_HELP"
 
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1
@@ -641,7 +641,7 @@ ERROR: Tor Browser update failed! Try again later.\
 "
       $output ${output_opts[@]} --progress "100"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       $output ${output_opts[@]} --showx
 
       exit 1      
@@ -694,7 +694,7 @@ tb_extract() {
    MSG="Finished installing Tor Browser. Can be found in $TEMP."
 
    $output ${output_opts[@]} --progress "100"
-   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+   $output ${output_opts[@]} --channel "both" --type "info" --title "$TITLE" --message "$MSG"
    sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
    $output ${output_opts[@]} --showx
 }
@@ -712,7 +712,7 @@ Please run: Start Menu -> Applications -> System -> Tor Browser Updater
             or in Terminal: $SCRIPTNAME --update"
 
       $output ${output_opts[@]} --progress "100"
-      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --channel "both" --type "error" --title "$TITLE" --message "$MSG"
       sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
       $output ${output_opts[@]} --showx
 
