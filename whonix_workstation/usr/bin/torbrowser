@@ -6,6 +6,8 @@
 ## See its man page for available command line options.
 
 SCRIPTNAME="$(basename $0)"
+IDENTIFIER="$SCRIPTNAME"
+ICON="/usr/share/whonix/icons/tbupdate.ico"
 
 ## Developer comment on this script:
 ## I would be very happy if this script would not be required.
@@ -30,8 +32,11 @@ root_check() {
       #echo "INFO: $SCRIPTNAME running as user."
       true
    else
-      ZENITY_TYPE="--error"
-      output "ERROR: do not run this script as root! Please run it as user."
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1
    fi
 }
@@ -39,6 +44,8 @@ root_check() {
 
 
 tb_error_handler() {
+   local return_code="$?"
+
    local MSG="\
 ###########################################################
 ## $SCRIPTNAME script bug.
@@ -50,15 +57,17 @@ tb_error_handler() {
 ## Please report this bug!
 ##
 ## BASH_COMMAND: $BASH_COMMAND
+## return_code: $return_code
 ##
 ## Experts only:
 ## bash -x $SCRIPTNAME
 ###########################################################\
 "
    echo "$MSG"
-   ZENITY_TYPE="--error"
-   output "$MSG"
-   progress_bar 100
+   $output ${output_opts[@]} --progress "100" 
+   $output ${output_opts[@]} --channel "x" --type "--error" --title "$TITLE" --message "$MSG"
+   $output ${output_opts[@]} --showx
+
    exit 1
 }
 
@@ -66,30 +75,27 @@ trap "tb_error_handler" ERR
 
 
 
+trap_sigterm() {
+   MSG="$SCRIPTNAME: sigterm received. Exiting."
+   $output ${output_opts[@]} --progress "100"
+   sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+   $output ${output_opts[@]} --channel "echo" --type "--error" --title "$TITLE" --message "$MSG"
+
+   #MSG="Aborted."
+   #$output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+   #$output ${output_opts[@]} --showx
+   
+   exit 1
+}
+
+trap "trap_sigterm" SIGTERM
+
+
+
 debug() {
    ## debug is just a marker for messages which is are not essential for users.
    ## either in cli or gui.
    echo "$*"
-}
-
-
-
-output() {
-   echo "$*"
-
-   #echo "ZENITY_TYPE= $ZENITY_TYPE"
-
-   if [ "$TB_FORCE_INSTALL" = "1" ]; then
-      return
-   fi
-
-   zenity --title="Tor Browser Update Check" "$ZENITY_TYPE" --text "
-Tor Browser Update Check:
-----------------------------------------------------------------------
-
-$*"
-
-   return "$?"
 }
 
 
@@ -132,7 +138,6 @@ $TEMP2"
 
 GATEWAY_IP="192.168.0.10"
 SOCKS_PORT_TBB_DOWNLOAD="9115"
-ICON="--window-icon /usr/share/whonix/icons/tbupdate.ico"
 
 DOC_LINK="https://www.whonix.org/wiki/Documentation"
 CONTRIBUTE_LINK="https://www.whonix.org/wiki/Contribute"
@@ -267,6 +272,8 @@ parse_cmd_options() {
 
 
 tb_preparation() {
+   trap "tb_error_handler" ERR
+
    ## Fortunately, on linux-image-486 kernel, while "uname --all" returns for example
    ## "Linux host 3.2.0-4-486 #1 Debian 3.2.41-2 i686 GNU/Linux",
    ## "uname --machine" returns "i686" and Tor Browser works fine with linux-image-486 kernel.
@@ -310,20 +317,30 @@ tb_preparation() {
       #debug "INFO: Tor Browser language variable not found. Setting TB_LANG to the default en-US."
       TB_LANG="en-US"
    fi
-}
 
-
-
-progress_bar() {
-   if [ "$TB_FORCE_INSTALL" = "1" ]; then
-      return
+   if [ "$display" = "" ]; then
+      if [ "$DISPLAY" = "" ]; then
+         display=":0"
+      else
+         display="$DISPLAY"
+      fi
    fi
-   if [ "$DISPLAY" ]; then
-      # zenity
-      echo "$1" >&3
-   else
-      echo "progress: $1"
-   fi
+
+   rm --force "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+
+   output="sudo -u user /usr/lib/whonix/doutput"
+
+   output_opt_1="--icon $ICON"
+   output_opt_2="--display $display"
+   output_opt_3="--identifier $IDENTIFIER"
+   output_opt_4="--instantecho"
+   output_opt_5="--nonewlinecli"
+
+   output_opts=( "$output_opt_1" "$output_opt_2" "$output_opt_3" "$output_opt_4" "$output_opt_5")
+
+   TITLE="Tor Browser Update Check (Whonix)"
+
+   $output ${output_opts[@]} --forget
 }
 
 
@@ -343,16 +360,11 @@ tb_update_check() {
    if [ "$TB_FORCE_INSTALL" = "1" ]; then
       true
    else
-      exec 3> >(\
-         zenity \
-            --timeout 86400 \
-            --no-markup \
-            --window-icon /usr/share/whonix/icons/tbupdate.ico \
-            --title="Tor Browser Update Check" "--progress" \
-            --auto-close \
-            --auto-kill \
-            --text "Checking Tor Browser version... Will take a moment..."\
-            )
+      $output ${output_opts[@]} --forget
+
+      NOTIFY_MSG="Checking Tor Browser version... Will take a moment..."
+
+      $output ${output_opts[@]} --progressbar --title "$TITLE" --message "$NOTIFY_MSG" --parentpid "$$" &
    fi
 
    if [ "$DEV_PASSTHROUGH" = "1" ]; then
@@ -361,7 +373,7 @@ tb_update_check() {
       CURL_PROXY="--socks5-hostname socks5h://"$GATEWAY_IP":"$SOCKS_PORT_TBB_DOWNLOAD"/"
    fi
 
-   progress_bar 10
+   $output ${output_opts[@]} --progress "10"
    debug "INFO: Find out latest version..."
    LINK="https://check.torproject.org/RecommendedTBBVersions"
    debug "INFO: Downloading: "$LINK""
@@ -376,22 +388,29 @@ tb_update_check() {
       --proto =https \
       --max-time 180 \
       --output ~/.tb/RecommendedTBBVersions \
+      --progress-bar \
       "$LINK" \
-      || { CURL_RETURN="$?" ; true; };
+      &
 
-   progress_bar 95
+   wait "$!" || { CURL_RETURN="$?" ; true; };
+
+   $output ${output_opts[@]} --progress "95"
 
    ## Check if curl failed.
    if [ ! "$CURL_RETURN" = "0" ]; then
-      ZENITY_TYPE="--error"
-      output "Failed to download: "$LINK"
+      MSG="Failed to download: "$LINK"
 
 $DOWNLOAD_FAIL_HELP"
-      progress_bar 100
+
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1
    fi
 
-   progress_bar 96
+   $output ${output_opts[@]} --progress "96"
 }
 
 
@@ -401,22 +420,28 @@ tb_download() {
 
    RecommendedTBBVersions=~/.tb/RecommendedTBBVersions
 
+   ## sets: TBBVERSION
    tbbversion
 
    if [ "$TBBVERSION" = "UNKNOWN" ]; then
-      ZENITY_TYPE="--error"
-      output "$VERSION_DETECTION_ERROR"
-      progress_bar 100
+      MSG="$VERSION_DETECTION_ERROR"
+
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1
    fi
 
-   progress_bar 97
+   $output ${output_opts[@]} --progress "97"
 
    ## Will fail if the file does not exist, i.e. Tor Browser not installed.
    ## Will not break the script.
    TBBINSTALLEDVERSION="$(head -1 ~/tor-browser_"$TB_LANG"/Docs/version)" || true
 
-   progress_bar 100
+   $output ${output_opts[@]} --progress "100"
+   sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
 
    if [ "$TBBINSTALLEDVERSION" != "" ]; then
       #debug "INFO: Successfully detected Tor Browser version."
@@ -435,11 +460,11 @@ INFO: This could be either because none is installed or because the version form
       VERSION_CHECK_RESULT="Looks like there is an update for Tor Browser."
    fi
 
-   answer="0"
+   local answer="0"
 
-   ZENITY_TYPE="--question"
-
-   output "\
+   MSG="\
+"$SCRIPTNAME" Update Check (Whonix)
+----------------------------------------------------------------------
 "$VERSION_CHECK_RESULT"
 
 Please close Tor Browser if you want to upgrade!
@@ -456,20 +481,26 @@ YOUR WHOLE BROWSER PROFILE INCLUDING BOOKMARKS AND PASSWORDS WILL GET REPLACED!
 
 A backup of your old Tor Browser and settings will be created in your home folder.
 It is a good idea to delete old TBB backups once in a while if you are running low with disk space.\
-" || { answer=$? ; true; };
-
-   ## zenity return codes
-   ## no 1
-   ## yes 0
-
-   debug "answer: $answer"
+"
 
    if [ "$TB_FORCE_INSTALL" = "1" ]; then
-      debug "INFO: TB_FORCE_INSTALL = 1"
       true
    else
-      if [ "$answer" = "1" ]; then 
-         exit 0
+      zenity --title="$TITLE" --question --text "$MSG" || { local answer="$?" ; true; };
+
+      ## zenity return codes
+      ## no 1
+      ## yes 0
+
+      debug "answer: $answer"
+
+      if [ "$TB_FORCE_INSTALL" = "1" ]; then
+         debug "INFO: TB_FORCE_INSTALL = 1"
+         true
+      else
+         if [ "$answer" = "1" ]; then 
+            exit 0
+         fi
       fi
    fi
 
@@ -477,20 +508,14 @@ It is a good idea to delete old TBB backups once in a while if you are running l
    if [ "$TB_FORCE_INSTALL" = "1" ]; then
       true
    else
-      exec 3> >(\
-         zenity \
-         --timeout 86400 \
-         --no-markup \
-         --window-icon /usr/share/whonix/icons/tbupdate.ico \
-         --title="Tor Browser Update Check" \
-         --progress \
-         --auto-close \
-         --auto-kill \
-         --text "Downloading Tor Browser... Will take a while..."\
-      )
+      $output ${output_opts[@]} --forget
+
+      NOTIFY_MSG="Downloading Tor Browser... Will take a while..."
+
+      $output ${output_opts[@]} --progressbar --title "$TITLE" --message "$NOTIFY_MSG" --parentpid "$$" &
    fi
 
-   progress_bar 5
+   $output ${output_opts[@]} --progress "5"
 
    if [ ! "$NOKILLTB" = "1" ]; then
       killall firefox || true
@@ -521,7 +546,7 @@ It is a good idea to delete old TBB backups once in a while if you are running l
       CURL_FORCE_SSL="--tlsv1 --proto =https"   
    fi
 
-   progress_bar 10
+   $output ${output_opts[@]} --progress "10"
 
    debug "INFO: Downloading GPG signature..."
    TBB_SIG_FILENAME="tor-browser-gnu-linux-"$ARCH"-"$TBBVERSION"-dev-"$TB_LANG".tar.gz.asc"
@@ -535,20 +560,26 @@ It is a good idea to delete old TBB backups once in a while if you are running l
       $CURL_FORCE_SSL \
       --max-time 180 \
       --output ~/.tb/"$TBB_SIG_FILENAME" \
+      --progress-bar \
       "$TBB_SIG_LINK" \
-      || { CURL_RETURN="$?" ; true; };
+      &
+
+   wait "$!" || { CURL_RETURN="$?" ; true; };
 
    ## Check if curl failed.
    if [ ! "$CURL_RETURN" = "0" ]; then
-      ZENITY_TYPE="--error"
-      output "Failed to download: "$TBB_SIG_LINK"
+      MSG= "Failed to download: "$TBB_SIG_LINK"
 
 $DOWNLOAD_FAIL_HELP"
-      progress_bar 100
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1
    fi
 
-   progress_bar 30
+   $output ${output_opts[@]} --progress "30"
 
    debug "INFO: Downloading Tor Browser Bundle: $TBBVERSION"
    TBB_PACKAGE_FILENAME="tor-browser-gnu-linux-"$ARCH"-"$TBBVERSION"-dev-"$TB_LANG".tar.gz"
@@ -561,20 +592,27 @@ $DOWNLOAD_FAIL_HELP"
       $CURL_PROXY \
       $CURL_FORCE_SSL \
       --output ~/.tb/"$TBB_PACKAGE_FILENAME" \
+      --progress-bar \
       "$TBB_PACKAGE_LINK" \
-      || { CURL_RETURN="$?" ; true; };
+      &
+
+   wait "$!" || { CURL_RETURN="$?" ; true; };
 
    ## Check if curl failed.
    if [ ! "$CURL_RETURN" = "0" ]; then
-      ZENITY_TYPE="--error"
-      output "Failed to download: "$TBB_PACKAGE_LINK"
+      MSG="Failed to download: "$TBB_PACKAGE_LINK"
 
 $DOWNLOAD_FAIL_HELP"
-      progress_bar 100
+
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1
 fi
 
-   progress_bar 90
+   $output ${output_opts[@]} --progress "90"
 }
 
 tb_verify() {
@@ -597,12 +635,15 @@ tb_verify() {
    debug "INFO: Signature valid."
    
    if [ ! "$TB_GPG_VERIFY_RETURN" = "0" ]; then
-      ZENITY_TYPE="--error"
-output "\
+MSG="\
 ERROR: GPG download signature could NOT be verified.
 ERROR: Tor Browser update failed! Try again later.\
 "
-      progress_bar 100
+      $output ${output_opts[@]} --progress "100"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      $output ${output_opts[@]} --showx
+
       exit 1      
    fi
 }
@@ -614,12 +655,12 @@ tb_extract() {
 
    tar -xzvf ~/.tb/"$TBB_PACKAGE_FILENAME" -C ~/.tb/
 
-   progress_bar 91
+   $output ${output_opts[@]} --progress "91"
    ## The tor-browser_"$TB_LANG"/Docs folder should already exist.
    ## Just to make sure the script will not break in case the get changed by upstream.
    mkdir --parents ~/tor-browser_"$TB_LANG"/Docs
 
-   progress_bar 92
+   $output ${output_opts[@]} --progress "92"
    debug "Moving the Tor Browser Bundle startup script to tor-browser_"$TB_LANG"/Docs/..."
    mv ~/.tb/tor-browser_"$TB_LANG"/start-tor-browser ~/.tb/tor-browser_"$TB_LANG"/Docs/
 
@@ -630,7 +671,7 @@ tb_extract() {
    debug "Creating version file tor-browser_"$TB_LANG"/Docs/version."
    echo ""$TBBVERSION"" > ~/.tb/tor-browser_"$TB_LANG"/Docs/version
 
-   progress_bar 93
+   $output ${output_opts[@]} --progress "93"
    debug "INFO: Creating Unbundled Tor Browser startup script..."
    ## Using this until Tor Browser upstream patch #7266 gets accepted.
    ##    improve RelativeLink.sh script comments, patch attached
@@ -648,12 +689,14 @@ tb_extract() {
    
    debug "INFO: Moving temporary folder ~/.tb/tor-browser_"$TB_LANG" to ~/tor-browser_"$TB_LANG"."
    mv ~/.tb/tor-browser_"$TB_LANG" ~/tor-browser_"$TB_LANG"
-
-   ZENITY_TYPE="--info"
-   progress_bar 100
    
    local TEMP=~/tor-browser_"$TB_LANG"/
-   output "Finished installing Tor Browser. Can be found in $TEMP."
+   MSG="Finished installing Tor Browser. Can be found in $TEMP."
+
+   $output ${output_opts[@]} --progress "100"
+   $output ${output_opts[@]} --channel "both" --type "--info" --title "$TITLE" --message "$MSG"
+   sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+   $output ${output_opts[@]} --showx
 }
 
 
@@ -662,12 +705,17 @@ tb_start_new_tab() {
    trap "tb_error_handler" ERR
 
    if [ ! -d ~/tor-browser_"$TB_LANG"/ ]; then
-      ZENITY_TYPE="--error"
-      output "Tor Browser is not installed?
+      MSG="Tor Browser is not installed?
 The folder ~/tor-browser_"$TB_LANG"/ does not exist.
 
 Please run: Start Menu -> Applications -> System -> Tor Browser Updater
             or in Terminal: $SCRIPTNAME --update"
+
+      $output ${output_opts[@]} --progress "100"
+      $output ${output_opts[@]} --channel "both" --type "--error" --title "$TITLE" --message "$MSG"
+      sudo -u user touch "/var/run/whonix/whonixcheck/"$IDENTIFIER"_done"
+      $output ${output_opts[@]} --showx
+
       exit 1
    fi
 
@@ -706,7 +754,7 @@ Please run: Start Menu -> Applications -> System -> Tor Browser Updater
 tb_start_recommend() {
    root_check
    tb_preparation
-   
+
    LINK="$IMPORTANTBLOG_OFFLINE_LINK"
    debug "INFO: Link set to $LINK"
  

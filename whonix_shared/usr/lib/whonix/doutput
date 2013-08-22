@@ -242,7 +242,13 @@ parse_cmd_options() {
 start_progress_bar() {
    trap "error_handler" ERR
 
-   local TITLE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title")"
+   if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title" ]; then
+      local TITLE="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_title")"
+   fi
+
+   if [ "$TITLE" = "" ]; then
+      local TITLE="Variable TITLE does not exist. Please report this bug!"
+   fi
 
    local FIFO="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo"
 
@@ -265,7 +271,7 @@ start_progress_bar() {
 
    ## "2>/dev/null" is required to hide the output "Killed zenity --display..."
    ## later when it gets killed by the progress_bar function.
-   sudo -u user exec 3>"$FIFO"
+   exec 3>"$FIFO"
 
    echo "$ZENITY_PROGRESS_PID" | sudo -u user tee "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid" > /dev/null
    
