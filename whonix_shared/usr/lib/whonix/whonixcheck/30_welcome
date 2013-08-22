@@ -3,8 +3,6 @@
 welcome() {
    trap "error_handler" ERR
 
-   TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)"
-
    local MSG="$NOTIFY_MSG"   
 
    $output ${output_opts[@]} --channel "echo" --type "--info" --title "$TITLE" --message "$MSG" --waitmessagecli

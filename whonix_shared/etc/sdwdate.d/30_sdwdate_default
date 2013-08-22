@@ -29,23 +29,23 @@ INTERVAL="60"
 
 RANDOMIZE="1"
 
-DISPATCH_PRE="/usr/lib/whonix/sdw_pre & disown"
+DISPATCH_PRE="/usr/lib/whonix/sdw_pre --autostart & disown"
 
-DISPATCH_POST_SUCCESS="/usr/lib/whonix/sdw_post_success & disown"
+DISPATCH_POST_SUCCESS="/usr/lib/whonix/sdw_post_success --autostart & disown"
 
-DISPATCH_POST_FAILURE="/usr/lib/whonix/sdw_post_failure & disown"
+DISPATCH_POST_FAILURE="/usr/lib/whonix/sdw_post_failure --autostart & disown"
 
-SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 15"
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_PAL]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 15"
 
-SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 30"
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_PAL]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 30"
 
-SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 45"
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_NEUTRAL]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 45"
 
-SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 60"
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_NEUTRAL]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 60"
 
-SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 65"
+SDWDATE_CURL_DISPATCH_PRE[SDWDATE_POOL_FOE]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 65"
 
-SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]="/usr/lib/whonix/output --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 80"
+SDWDATE_CURL_DISPATCH_POST[SDWDATE_POOL_FOE]="sudo -u user /usr/lib/whonix/doutput --icon /usr/share/whonix/icons/timesync.ico --identifier timesync --progress 80"
 
 #HTTP_USER_AGENT=""
 #HTTP_USER_AGENT="$(/usr/bin/getTorbuttonUserAgent)"

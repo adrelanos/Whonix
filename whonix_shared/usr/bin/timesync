@@ -54,14 +54,7 @@ timesync_main() {
 
    check_sdwdate ## 70_check-sdwdate
 
-   cleanup ## 75_cleanup
-
-   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showcli
-   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showx
-
-   true "END"
-
-   exit "$EXIT_CODE"   
+   cleanup "1" ## 75_cleanup 
 }
 
 timesync_main ${1+"$@"}

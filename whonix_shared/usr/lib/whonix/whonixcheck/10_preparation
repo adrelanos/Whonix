@@ -59,10 +59,14 @@ preparation() {
    sync
 
    if [ "$display" = "" ]; then
-      display="$DISPLAY"
-   fi  
+      if [ "$DISPLAY" = "" ]; then
+         display=":0"
+      else
+         display="$DISPLAY"
+      fi
+   fi
 
-   output="/usr/lib/whonix/output"
+   output="sudo -u user /usr/lib/whonix/doutput"
 
    output_opt_1="--icon $ICON"
    output_opt_2="--display $display"
@@ -98,8 +102,7 @@ preparation() {
    ## ARCH="i686"
    ARCH="$(uname --machine)"
   
-   local MSG="INFO: $ARCH detected."
-   true "--info" "$MSG" "debug"
+   TITLE="$SCRIPTNAME $VM $INSTALLED_WHONIX_VERSION Info $(date)" 
    
    for i in /etc/whonix.d/*; do
       if [ -f "$i" ]; then

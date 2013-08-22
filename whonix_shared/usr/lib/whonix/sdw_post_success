@@ -27,6 +27,8 @@ source /usr/lib/whonix/whonixcheck/75_cleanup
 timesync_main() {
    trap "error_handler" ERR
 
+   RUN_BY_CRON="1"
+
    parse_cmd_options ${1+"$@"} ## help_parse-cmd-options
    preparation ## 10_preparation
 
@@ -44,12 +46,8 @@ timesync_main() {
    
    check_sdwdate ## 70_check-sdwdate
 
-   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showcli
-   /usr/lib/whonix/delay /usr/lib/whonix/output --identifier timesync --icon /usr/share/whonix/icons/timesync.ico --showx
-
-   cleanup ## 75_cleanup
+   cleanup "1" ## 75_cleanup
 }
 
 timesync_main ${1+"$@"}
 
-## End of timesync script.

@@ -100,14 +100,26 @@ parse_cmd_options() {
            --identifier)
                IDENTIFIER="$2"
                shift 2
+               if [ "$IDENTIFIER" = "" ]; then
+                  echo "$0 ERROR: variable IDENTIFIER is empty."
+                  exit 1
+               fi               
                ;;
            --display)
                display="$2"
                shift 2
+               if [ "$display" = "" ]; then
+                  echo "$0 ERROR: variable display is empty."
+                  exit 1
+               fi               
                ;;               
            --parentpid)
                PARENT_PID="$2"
                shift 2
+               if [ "$PARENT_PID" = "" ]; then
+                  echo "$0 ERROR: variable PARENT_PID is empty."
+                  exit 1
+               fi               
                ;;
            --progressbar)
                PROGRESSBAR="1"
@@ -116,22 +128,42 @@ parse_cmd_options() {
            --progress)
                PROGRESS="$2"
                shift 2
+               if [ "$PROGRESS" = "" ]; then
+                  echo "$0 ERROR: variable PROGRESS is empty."
+                  exit 1
+               fi                      
                ;;               
            --type)
                TYPE="$2"
                shift 2
+               if [ "$TYPE" = "" ]; then
+                  echo "$0 ERROR: variable TYPE is empty."
+                  exit 1
+               fi                      
                ;;
            --channel)
                CHANNEL="$2"
                shift 2
+               if [ "$CHANNEL" = "" ]; then
+                  echo "$0 ERROR: variable CHANNEL is empty."
+                  exit 1
+               fi                      
                ;;
            --message)
                MESSAGE="$2"
                shift 2
+               if [ "$MESSAGE" = "" ]; then
+                  echo "$0 ERROR: variable MESSAGE is empty."
+                  exit 1
+               fi               
                ;;
            --title)
                TITLE="$2"
                shift 2
+               if [ "$TITLE" = "" ]; then
+                  echo "$0 ERROR: variable TITLE is empty."
+                  exit 1
+               fi               
                ;;
            --waitmessagecli)
                WAIT_MESSAGE_CLI=1
@@ -176,6 +208,10 @@ parse_cmd_options() {
            --icon)
                ICON="$2"
                shift 2
+               if [ "$ICON" = "" ]; then
+                  echo "$0 ERROR: variable ICON is empty."
+                  exit 1
+               fi
                ;;
            --passive)
                PASSIVE="1"
@@ -264,10 +300,14 @@ output_write_to_tty() {
 progress_bar() {
    trap "error_handler" ERR
 
-   ZENITY_PROGRESS_PID="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid")" || true
-
    if [ -p "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo" ]; then
       local FIFO="/var/lib/whonix/whonixcheck/"$IDENTIFIER"_fifo"
+   else
+      return 0
+   fi
+
+   if [ -f "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid" ]; then
+      ZENITY_PROGRESS_PID="$(cat "/var/lib/whonix/whonixcheck/"$IDENTIFIER"_zenity_progress_pid")"
    else
       return 0
    fi
