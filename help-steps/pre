@@ -100,6 +100,8 @@ error_handler_exit() {
       rm --force "/etc/apt/sources.list.d/whonix_temp.list"
       ## Remove lockfile for whonixcheck.
       rm --force "/var/run/package_manager_lock"
+      rm --force "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+      rm --force "$WHONIX_BUILD_APT_GET_GPGV_LOG"
    fi
    $output_command "
 ############################################################
@@ -307,6 +309,111 @@ disable_apt_cache() {
 }
 
 export -f disable_apt_cache
+
+## {{ apt_get_gpgv
+
+create_tmp_apt_get_gpgv() {
+   trap "error_handler_general" ERR INT TERM
+
+   ## workaround for
+   ##     apt: Provide meaningful exit codes for gpg failures
+   ##     https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=745735
+   ## W: A error occurred during the signature verification.
+   ## To catch situations such as:
+   ##     The repository is not updated and the previous index files will be used.
+   ##     GPG error: http://deb.torproject.org stable Release: The following signatures were invalid: KEYEXPIRED 1409325681 KEYEXPIRED 1409325681 KEYEXPIRED 1409325681 KEYEXPIRED 1409325681
+   ## That apt-repository would otherwise be silently ignored without error notification.
+
+   apt_get_gpgv_opts+=" -o Dir::Bin::gpg=$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN "
+   export apt_get_gpgv_opts
+
+   rm --force "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+   touch "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+
+   ## apt-get calls gpgv (this gpgv wrapper) with --status-fd 3. We redirect
+   ## a copy of file descriptor 3 to the log.
+   ## Variable WHONIX_BUILD_APT_GET_GPGV_LOG gets set and exported in help-steps/variables.
+   echo '#!/bin/bash
+gpgv ${1+"$@"} 3> >(tee --append "$WHONIX_BUILD_APT_GET_GPGV_LOG" >&3)' > "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+
+   chmod +x "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+}
+
+export -f create_tmp_apt_get_gpgv
+
+parse_tmp_apt_get_gpgv() {
+   trap "error_handler_general" ERR INT TERM
+
+   local gpg_log
+   gpg_log="$(cat "$WHONIX_BUILD_APT_GET_GPGV_LOG")"
+   if [ "$gpg_log" = "" ]; then
+      true "ERROR: variable gpg_log is empty!"
+      error "See above!"
+   fi
+
+   local current_unixtime
+   current_unixtime="$(date +%s)"
+   local current_time
+   current_time="$(date)"
+
+   OIFS="$IFS"
+   IFS="
+"
+
+   for line in $gpg_log; do
+      IFS="$OIFS"
+      true "line: $line"
+      local one two three four five
+      read -r one two three four five _ <<< "$line"
+      true "one: $one | two: $two | three: $three | four: $four | five: $five"
+      if [ "$two" = "KEYEXPIRED" ]; then
+         local keyexpired_unixtime
+         keyexpired_unixtime="$three"
+         if [ "$current_unixtime" -ge "$keyexpired_unixtime" ]; then
+            local difference_in_seconds difference_in_minutes difference_in_hours difference_in_days difference_in_years month_has_seconds half_month_has_seconds maximum_age_in_seconds
+            difference_in_seconds="$(( $current_unixtime - $keyexpired_unixtime ))"
+            difference_in_minutes="$(( $difference_in_seconds / 60 ))"
+            difference_in_hours="$(( $difference_in_minutes / 60 ))"
+            difference_in_days="$(( $difference_in_hours / 24 ))"
+            difference_in_years="$(( $difference_in_days / 365 ))"
+            month_has_seconds="2592000"
+            half_month_has_seconds="$(( $month_has_seconds / 2 ))"
+            maximum_age_in_seconds="$half_month_has_seconds"
+            if [ "$difference_in_seconds" -ge "$maximum_age_in_seconds" ]; then
+               true "${bold}${red}ERROR: apt-get gpgv KEYEXPIRED!
+current_unixtime: $current_unixtime
+keyexpired_unixtime: $keyexpired_unixtime
+current_time: $current_time
+difference_in_seconds: $difference_in_seconds
+difference_in_minutes: $difference_in_minutes
+difference_in_hours: $difference_in_hours
+difference_in_days: $difference_in_days
+difference_in_years: $difference_in_years
+See above!${reset}"
+               error "See above!"
+            fi
+         fi
+      fi
+   done
+
+   ## Fallback, in case $gpg_log was empty and that error was skipped.
+   IFS="$OIFS"
+}
+
+export -f parse_tmp_apt_get_gpgv
+
+delete_tmp_apt_get_gpgv() {
+   trap "error_handler_general" ERR INT TERM
+   rm --force "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN"
+   rm --force "$WHONIX_BUILD_APT_GET_GPGV_LOG"
+}
+
+export -f delete_tmp_apt_get_gpgv
+
+## Prevent the log from needlessly filling up.
+rm --force "$WHONIX_BUILD_APT_GET_GPGV_LOG"
+
+## }} apt_get_gpgv
 
 #echo "${bold}Currently running script: $BASH_SOURCE${reset}"
 

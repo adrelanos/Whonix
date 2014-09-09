@@ -239,7 +239,11 @@ Please delete Whonix's source code folder and get it again as user, not root!${r
 
    if [ ! "$dpkg_exit_code" = "0" ]; then
       ## Update package lists and install apt-cacher-ng.
-      apt-get $apt_timeout_opts update
+      create_tmp_apt_get_gpgv
+      apt-get $apt_timeout_opts $apt_get_gpgv_opts update
+      parse_tmp_apt_get_gpgv
+      delete_tmp_apt_get_gpgv
+
       ## --no-install-recommends to prevent installing avahi-daemon.
       apt-get $apt_unattended_opts $apt_timeout_opts --no-install-recommends --yes install apt-cacher-ng
    fi
@@ -257,7 +261,10 @@ Please delete Whonix's source code folder and get it again as user, not root!${r
    maybe_enable_apt_cache
 
    ## Update package lists after enabling apt-cacher-ng.
-   apt-get $apt_timeout_opts update
+   create_tmp_apt_get_gpgv
+   apt-get $apt_timeout_opts $apt_get_gpgv_opts update
+   parse_tmp_apt_get_gpgv
+   delete_tmp_apt_get_gpgv
 
    if [ ! "$WHONIX_BUILD_UPGRADE_BUILD_MACHINE" = "0" ]; then
       ## Update package lists and upgrade.
@@ -513,12 +520,16 @@ a linux kernel.)"
       fi
 
       ## Update package lists to include temporary repository.
+      create_tmp_apt_get_gpgv
       apt-get \
          $apt_timeout_opts \
          -o Dir::Etc::sourcelist="$TEMP" \
          -o Dir::Etc::sourceparts="-" \
          -o APT::Get::List-Cleanup="0" \
+         $apt_get_gpgv_opts \
          update
+      parse_tmp_apt_get_gpgv
+      delete_tmp_apt_get_gpgv
 
       apt-get \
          --yes \

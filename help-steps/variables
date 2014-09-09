@@ -244,6 +244,12 @@ export EMPTY_DIR
 
 [ -n "$WHONIX_SOURCES_LIST_TEMP_BUILD_FOLDER" ] || WHONIX_SOURCES_LIST_TEMP_BUILD_FOLDER="/var/lib/whonix/sources_temp_list.d"
 
+[ -n "$WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN" ] || WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN="/tmp/whonix_build_apt-get_gpgv"
+export WHONIX_BUILD_APT_GET_GPGV_TEMP_BIN
+
+[ -n "$WHONIX_BUILD_APT_GET_GPGV_LOG" ] || WHONIX_BUILD_APT_GET_GPGV_LOG="/tmp/whonix_build_apt-get_gpgv.log"
+export WHONIX_BUILD_APT_GET_GPGV_LOG
+
 ## {{{ whonix_build_on_operating_system
 
 if [ "$whonix_build_on_operating_system_detect_skip" = "1" ]; then
